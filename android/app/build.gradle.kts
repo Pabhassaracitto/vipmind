@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.vipmind.vipmind"
+    namespace = "com.vipmind"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
