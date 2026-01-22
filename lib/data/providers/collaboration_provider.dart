@@ -19,7 +19,7 @@ class CollaborationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateCursor(String oderId, Offset position) {
+  void updateCursor(String userId, Offset position) {  // Sửa từ oderId thành userId
     _userCursors[userId] = position;
     notifyListeners();
   }

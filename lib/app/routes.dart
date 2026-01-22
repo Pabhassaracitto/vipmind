@@ -1,21 +1,139 @@
 import 'package:flutter/material.dart';
 
+// Import all screens
 import '../features/splash/splash_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/register_screen.dart';
 import '../features/home/screens/home_screen.dart';
 import '../features/mindmap/screens/mindmap_editor_screen.dart';
-import '../features/mindmap/screens/mindmap_preview_screen.dart';
-import '../features/ai_engine/screens/text_to_mindmap_screen.dart';
-import '../features/ai_engine/screens/voice_to_mindmap_screen.dart';
-import '../features/ai_engine/screens/image_to_mindmap_screen.dart';
-import '../features/templates/screens/template_gallery_screen.dart';
-import '../features/presentation/screens/presentation_screen.dart';
-import '../features/anki/screens/anki_deck_screen.dart';
-import '../features/anki/screens/flashcard_review_screen.dart';
-import '../features/zen_mode/zen_mode_screen.dart';
-import '../features/settings/screens/settings_screen.dart';
 
+// Temporary placeholder screens (create these files)
+class MindmapPreviewScreen extends StatelessWidget {
+  final String mindmapId;
+  const MindmapPreviewScreen({super.key, required this.mindmapId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Preview')),
+      body: Center(child: Text('Preview: $mindmapId')),
+    );
+  }
+}
+
+class TextToMindmapScreen extends StatelessWidget {
+  const TextToMindmapScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Text to Mindmap')),
+      body: const Center(child: Text('Coming Soon')),
+    );
+  }
+}
+
+class VoiceToMindmapScreen extends StatelessWidget {
+  const VoiceToMindmapScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Voice to Mindmap')),
+      body: const Center(child: Text('Coming Soon')),
+    );
+  }
+}
+
+class ImageToMindmapScreen extends StatelessWidget {
+  const ImageToMindmapScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Image to Mindmap')),
+      body: const Center(child: Text('Coming Soon')),
+    );
+  }
+}
+
+class TemplateGalleryScreen extends StatelessWidget {
+  const TemplateGalleryScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Templates')),
+      body: const Center(child: Text('Coming Soon')),
+    );
+  }
+}
+
+class PresentationScreen extends StatelessWidget {
+  final String mindmapId;
+  const PresentationScreen({super.key, required this.mindmapId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Presentation')),
+      body: Center(child: Text('Presenting: $mindmapId')),
+    );
+  }
+}
+
+class AnkiDeckScreen extends StatelessWidget {
+  const AnkiDeckScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Anki Deck')),
+      body: const Center(child: Text('Coming Soon')),
+    );
+  }
+}
+
+class FlashcardReviewScreen extends StatelessWidget {
+  final String deckId;
+  const FlashcardReviewScreen({super.key, required this.deckId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Review')),
+      body: Center(child: Text('Reviewing: $deckId')),
+    );
+  }
+}
+
+class ZenModeScreen extends StatelessWidget {
+  const ZenModeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: const Center(
+        child: Text('Zen Mode', style: TextStyle(color: Colors.white, fontSize: 32)),
+      ),
+    );
+  }
+}
+
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Settings')),
+      body: const Center(child: Text('Settings')),
+    );
+  }
+}
+
+// Routes class
 class AppRoutes {
   static const String splash = '/';
   static const String login = '/login';

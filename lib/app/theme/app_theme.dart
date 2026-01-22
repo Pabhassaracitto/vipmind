@@ -184,8 +184,8 @@ class AppTheme {
   }
 
   // Card Theme
-  static CardTheme get _cardTheme {
-    return CardTheme(
+  static CardThemeData get _cardThemeDark {  // Đổi từ CardTheme
+    return CardThemeData(  // Đổi từ CardTheme
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -194,8 +194,8 @@ class AppTheme {
     );
   }
 
-  static CardTheme get _cardThemeDark {
-    return CardTheme(
+  static CardThemeData get _cardTheme {  // Đổi từ CardTheme
+    return CardThemeData(  // Đổi từ CardTheme
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),

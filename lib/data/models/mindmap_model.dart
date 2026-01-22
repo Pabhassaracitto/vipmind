@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';  // Thêm dòng này
 import 'package:uuid/uuid.dart';
 import 'node_model.dart';
 import 'connection_model.dart';
