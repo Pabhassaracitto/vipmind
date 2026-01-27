@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "419634963419",
+    "project_id": "vipmind-7c4bb",
+    "storage_bucket": "vipmind-7c4bb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:419634963419:android:8d34cd464fdaf294b0bdfe",
+        "android_client_info": {
+          "package_name": "com.vipmind"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQIvuEM_Yc-jD5iVhpxpvnydJ5ZJ9YYRw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
