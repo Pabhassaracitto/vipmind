@@ -1,11 +1,12 @@
-import 'package:flutter/material.dart';
+//mindmap_canvas.dart
 import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
 
+import '../../../app/theme/app_colors.dart';
 import '../../../data/models/mindmap_model.dart';
 import '../../../data/models/node_model.dart';
-import '../../../app/theme/app_colors.dart';
-import 'node_widget.dart';
 import 'connection_painter.dart';
+import 'node_widget.dart';
 
 class MindmapCanvas extends StatefulWidget {
   final MindmapModel mindmap;
@@ -161,7 +162,7 @@ class _MindmapCanvasState extends State<MindmapCanvas>
       painter: _GridPainter(
         offset: widget.canvasOffset,
         scale: widget.canvasScale,
-        color: AppColors.textSecondary.withOpacity(0.05),
+        color: AppColors.textSecondary.withValues(alpha: 0.05),
       ),
     );
   }
@@ -226,7 +227,7 @@ class _MindmapCanvasState extends State<MindmapCanvas>
                     gradient: AppColors.primaryGradient,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primaryBlue.withOpacity(0.3),
+                        color: AppColors.primaryBlue.withValues(alpha: 0.3),
                         blurRadius: 40,
                         spreadRadius: 10,
                       ),

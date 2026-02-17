@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'routes.dart';
 import 'theme/app_theme.dart';
@@ -19,7 +18,7 @@ class NeuroMindmapApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
-          themeMode: themeProvider.themeMode,  // Đã OK vì dùng Consumer
+          themeMode: themeProvider.themeMode, // Đã OK vì dùng Consumer
           home: const SplashScreen(),
           onGenerateRoute: AppRoutes.generateRoute,
         );

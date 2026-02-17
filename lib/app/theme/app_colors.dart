@@ -85,7 +85,7 @@ class AppColors {
     return LinearGradient(
       colors: [
         baseColor,
-        baseColor.withOpacity(0.7),
+        baseColor.withValues(alpha: 0.7),
       ],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,

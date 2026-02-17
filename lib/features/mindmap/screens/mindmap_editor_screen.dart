@@ -4,18 +4,16 @@ import 'package:provider/provider.dart';
 
 import '../../../app/routes.dart';
 import '../../../app/theme/app_colors.dart';
-import '../../../data/providers/mindmap_provider.dart';
-import '../../../data/providers/audio_provider.dart';
-import '../../../data/models/node_model.dart';
-import '../../../data/models/mindmap_model.dart';
-import '../../../core/services/haptic_service.dart';
 import '../../../core/services/audio_service.dart';
+import '../../../core/services/haptic_service.dart';
+import '../../../data/models/mindmap_model.dart';
+import '../../../data/models/node_model.dart';
+import '../../../data/providers/mindmap_provider.dart';
 import '../widgets/mindmap_canvas.dart';
-import '../widgets/toolbar_widget.dart';
-import '../widgets/node_editor_panel.dart';
-import '../widgets/zoom_controls.dart';
 import '../widgets/minimap_widget.dart';
-
+import '../widgets/node_editor_panel.dart';
+import '../widgets/toolbar_widget.dart';
+import '../widgets/zoom_controls.dart';
 class MindmapEditorScreen extends StatefulWidget {
   final String? mindmapId;
 
@@ -356,7 +354,8 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline, size: 64, color: AppColors.textSecondary),
+          const Icon(Icons.error_outline,
+              size: 64, color: AppColors.textSecondary),
           const SizedBox(height: 16),
           const Text('Mindmap not found', style: TextStyle(fontSize: 18)),
           const SizedBox(height: 24),
@@ -387,7 +386,7 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
             end: Alignment.bottomCenter,
             colors: [
               Theme.of(context).scaffoldBackgroundColor,
-              Theme.of(context).scaffoldBackgroundColor.withOpacity(0),
+              Theme.of(context).scaffoldBackgroundColor.withValues(alpha:0),
             ],
           ),
         ),
@@ -406,7 +405,7 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha:0.1),
                       blurRadius: 8,
                     ),
                   ],
@@ -422,13 +421,14 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
               child: GestureDetector(
                 onTap: () => _showRenameDialog(mindmap),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha:0.1),
                         blurRadius: 8,
                       ),
                     ],
@@ -447,7 +447,8 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
                         ),
                       ),
                       const SizedBox(width: 8),
-                      const Icon(Icons.edit, size: 16, color: AppColors.textSecondary),
+                      const Icon(Icons.edit,
+                          size: 16, color: AppColors.textSecondary),
                     ],
                   ),
                 ),
@@ -460,12 +461,13 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
             Consumer<MindmapProvider>(
               builder: (context, provider, _) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
@@ -473,7 +475,7 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
                         size: 16,
                         color: AppColors.successGreen,
                       ),
-                      const SizedBox(width: 6),
+                      SizedBox(width: 6),
                       Text(
                         'Saved',
                         style: TextStyle(
@@ -568,15 +570,14 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
-              if (controller.text.isNotEmpty) {
-                final updated = mindmap.copyWith(title: controller.text);
-                context.read<MindmapProvider>().updateNode;
-                Navigator.pop(context);
-              }
-            },
-            child: const Text('Save'),
-          ),
+  onPressed: () {
+    if (controller.text.isNotEmpty) {
+      context.read<MindmapProvider>().updateMindmapTitle(controller.text);
+      Navigator.pop(context);
+    }
+  },
+  child: const Text('Save'),
+),
         ],
       ),
     );
@@ -605,7 +606,6 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
                 ),
               ),
               const SizedBox(height: 20),
-
               _OptionTile(
                 icon: Icons.slideshow_rounded,
                 title: 'Present',
@@ -660,7 +660,6 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
                   _showDeleteConfirmation();
                 },
               ),
-
               const SizedBox(height: 16),
             ],
           ),
@@ -786,8 +785,10 @@ class _OptionTile extends StatelessWidget {
 
     return ListTile(
       leading: Icon(icon, color: color),
-      title: Text(title, style: TextStyle(color: color, fontWeight: FontWeight.w500)),
-      subtitle: Text(subtitle, style: TextStyle(fontSize: 12, color: color?.withOpacity(0.7))),
+      title: Text(title,
+          style: TextStyle(color: color, fontWeight: FontWeight.w500)),
+      subtitle: Text(subtitle,
+          style: TextStyle(fontSize: 12, color: color?.withValues(alpha:0.7))),
       onTap: onTap,
     );
   }

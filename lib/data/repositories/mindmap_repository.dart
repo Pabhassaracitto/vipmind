@@ -1,10 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/mindmap_model.dart';
-import '../../core/services/firebase_service.dart';
 
 class MindmapRepository {
   final CollectionReference<Map<String, dynamic>> _collection =
-  FirebaseFirestore.instance.collection('mindmaps');
+      FirebaseFirestore.instance.collection('mindmaps');
 
   // Get all mindmaps for a user
   Future<List<MindmapModel>> getMindmaps(String userId) async {
@@ -119,9 +118,8 @@ class MindmapRepository {
   // Search mindmaps
   Future<List<MindmapModel>> searchMindmaps(String userId, String query) async {
     try {
-      final snapshot = await _collection
-          .where('ownerId', isEqualTo: userId)
-          .get();
+      final snapshot =
+          await _collection.where('ownerId', isEqualTo: userId).get();
 
       final results = snapshot.docs
           .map((doc) => MindmapModel.fromJson({...doc.data(), 'id': doc.id}))

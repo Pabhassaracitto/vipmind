@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_colors.dart';
 
@@ -73,13 +73,13 @@ class HomeHeader extends StatelessWidget {
                       : null,
                   child: user?.photoURL == null
                       ? Text(
-                    user?.displayName?.substring(0, 1).toUpperCase() ??
-                        'U',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
+                          user?.displayName?.substring(0, 1).toUpperCase() ??
+                              'U',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
                       : null,
                 ),
               ),
@@ -114,7 +114,7 @@ class HomeHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),

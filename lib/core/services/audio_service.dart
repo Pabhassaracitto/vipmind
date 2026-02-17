@@ -1,4 +1,5 @@
 import 'package:just_audio/just_audio.dart';
+import 'package:flutter/foundation.dart';
 
 class AudioService {
   static final AudioPlayer _player = AudioPlayer();
@@ -11,7 +12,9 @@ class AudioService {
       await _player.setAsset('assets/audio/click.mp3');
       await _player.play();
     } catch (e) {
-      // Silent fail - audio is optional
+      if (kDebugMode) {
+        debugPrint("Failed to play sound 'assets/audio/click.mp3': $e");
+      }
     }
   }
 
@@ -20,7 +23,9 @@ class AudioService {
       await _player.setAsset('assets/audio/success.mp3');
       await _player.play();
     } catch (e) {
-      // Silent fail
+      if (kDebugMode) {
+        debugPrint("Failed to play sound 'assets/audio/success.mp3': $e");
+      }
     }
   }
 
@@ -29,7 +34,9 @@ class AudioService {
       await _player.setAsset('assets/audio/click.mp3');
       await _player.play();
     } catch (e) {
-      // Silent fail
+      if (kDebugMode) {
+        debugPrint("Failed to play sound 'assets/audio/click.mp3': $e");
+      }
     }
   }
 
@@ -38,7 +45,9 @@ class AudioService {
       await _player.setAsset('assets/audio/click.mp3');
       await _player.play();
     } catch (e) {
-      // Silent fail
+      if (kDebugMode) {
+        debugPrint("Failed to play sound 'assets/audio/click.mp3': $e");
+      }
     }
   }
 
@@ -47,7 +56,9 @@ class AudioService {
       await _player.setAsset('assets/audio/click.mp3');
       await _player.play();
     } catch (e) {
-      // Silent fail
+      if (kDebugMode) {
+        debugPrint("Failed to play sound 'assets/audio/click.mp3': $e");
+      }
     }
   }
 
@@ -56,7 +67,9 @@ class AudioService {
       await _player.setAsset('assets/audio/success.mp3');
       await _player.play();
     } catch (e) {
-      // Silent fail
+      if (kDebugMode) {
+        debugPrint("Failed to play sound 'assets/audio/success.mp3': $e");
+      }
     }
   }
 
@@ -83,7 +96,9 @@ class AudioService {
       await _ambientPlayer.play();
       _isAmbientPlaying = true;
     } catch (e) {
-      // Silent fail
+      if (kDebugMode) {
+        debugPrint("Failed to play ambient sound '$type': $e");
+      }
     }
   }
 
@@ -92,7 +107,9 @@ class AudioService {
       await _ambientPlayer.stop();
       _isAmbientPlaying = false;
     } catch (e) {
-      // Silent fail
+      if (kDebugMode) {
+        debugPrint("Failed to stop ambient sound: $e");
+      }
     }
   }
 

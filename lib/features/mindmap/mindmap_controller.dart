@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../data/models/mindmap_model.dart';
-import '../../data/models/node_model.dart';
 import '../../data/repositories/mindmap_repository.dart';
 
 class MindmapController extends ChangeNotifier {

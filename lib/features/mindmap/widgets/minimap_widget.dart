@@ -35,26 +35,28 @@ class MinimapWidget extends StatelessWidget {
 
     return GestureDetector(
       onPanUpdate: (details) {
-        _handlePan(details.localPosition, bounds, mapScale);
+        // THÊM biến context vào cuối
+        _handlePan(details.localPosition, bounds, mapScale, context);
       },
       onTapDown: (details) {
-        _handlePan(details.localPosition, bounds, mapScale);
+        // THÊM biến context vào cuối
+        _handlePan(details.localPosition, bounds, mapScale, context);
       },
       child: Container(
         width: _minimapSize,
         height: _minimapSize,
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor.withOpacity(0.95),
+          color: Theme.of(context).cardColor.withValues(alpha: 0.95),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ],
           border: Border.all(
-            color: AppColors.textSecondary.withOpacity(0.1),
+            color: AppColors.textSecondary.withValues(alpha: 0.1),
           ),
         ),
         child: ClipRRect(
@@ -131,10 +133,10 @@ class MinimapWidget extends StatelessWidget {
   }
 
   Widget _buildViewportIndicator(
-      Rect bounds,
-      double mapScale,
-      BuildContext context,
-      ) {
+    Rect bounds,
+    double mapScale,
+    BuildContext context,
+  ) {
     // Calculate viewport rectangle
     final screenSize = MediaQuery.of(context).size;
     final viewportWidth = screenSize.width / currentScale;
@@ -159,21 +161,21 @@ class MinimapWidget extends StatelessWidget {
             color: AppColors.primaryBlue,
             width: 2,
           ),
-          color: AppColors.primaryBlue.withOpacity(0.1),
+          color: AppColors.primaryBlue.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(4),
         ),
       ),
     );
   }
 
-  void _handlePan(Offset localPosition, Rect bounds, double mapScale) {
-    // Convert minimap position to canvas position
+  void _handlePan(Offset localPosition, Rect bounds, double mapScale,
+      BuildContext context) {
+    // Calculate canvas coordinates
     final canvasX = (localPosition.dx - _padding) / mapScale + bounds.left;
     final canvasY = (localPosition.dy - _padding) / mapScale + bounds.top;
 
-    // Calculate new offset to center on this position
-    final screenSize = WidgetsBinding.instance.window.physicalSize /
-        WidgetsBinding.instance.window.devicePixelRatio;
+    // SỬ DỤNG MediaQuery thay vì View.of để lấy kích thước màn hình an toàn hơn
+    final screenSize = MediaQuery.of(context).size;
 
     final newOffset = Offset(
       -canvasX * currentScale + screenSize.width / 2,

@@ -1,8 +1,10 @@
+//mindmap_provider.dart
 import 'package:flutter/material.dart';
 import '../models/mindmap_model.dart';
 import '../models/node_model.dart';
 import '../models/connection_model.dart';
 import '../repositories/mindmap_repository.dart';
+import 'dart:math' as math;
 
 class MindmapProvider extends ChangeNotifier {
   final MindmapRepository _repository = MindmapRepository();
@@ -193,6 +195,17 @@ class MindmapProvider extends ChangeNotifier {
     );
 
     _currentMindmap!.addNode(node, parentId: parentId);
+
+    // Create connection for parent-child relationship
+    if (parentId != null) {
+      final connection = ConnectionModel(
+        fromNodeId: parentId,
+        toNodeId: node.id,
+        style: ConnectionStyle.curved,
+      );
+      _currentMindmap!.connections.add(connection);
+    }
+
     _selectedNodeId = node.id;
     notifyListeners();
   }
@@ -327,13 +340,13 @@ class MindmapProvider extends ChangeNotifier {
   }
 
   void _layoutChildrenRadially(
-      String parentId,
-      double centerX,
-      double centerY,
-      double startAngle,
-      double endAngle,
-      double radius,
-      ) {
+    String parentId,
+    double centerX,
+    double centerY,
+    double startAngle,
+    double endAngle,
+    double radius,
+  ) {
     final parent = _currentMindmap!.nodes[parentId];
     if (parent == null || parent.childrenIds.isEmpty) return;
 
@@ -377,7 +390,7 @@ class MindmapProvider extends ChangeNotifier {
     const verticalSpacing = 100.0;
 
     _currentMindmap!.nodes[root.id] = root.copyWith(
-      position: Offset(startX, startY),
+      position: const Offset(startX, startY),
     );
 
     _layoutChildrenAsTree(
@@ -390,12 +403,12 @@ class MindmapProvider extends ChangeNotifier {
   }
 
   double _layoutChildrenAsTree(
-      String parentId,
-      double startX,
-      double startY,
-      double horizontalSpacing,
-      double verticalSpacing,
-      ) {
+    String parentId,
+    double startX,
+    double startY,
+    double horizontalSpacing,
+    double verticalSpacing,
+  ) {
     final parent = _currentMindmap!.nodes[parentId];
     if (parent == null || parent.childrenIds.isEmpty) return startY;
 
@@ -436,7 +449,8 @@ class MindmapProvider extends ChangeNotifier {
       position: Offset(centerX - root.size.width / 2, startY),
     );
 
-    _layoutChildrenOrgChart(root.id, centerX, startY + root.size.height + verticalSpacing);
+    _layoutChildrenOrgChart(
+        root.id, centerX, startY + root.size.height + verticalSpacing);
   }
 
   void _layoutChildrenOrgChart(String parentId, double centerX, double y) {
@@ -484,8 +498,8 @@ class MindmapProvider extends ChangeNotifier {
   }
 
   // Math helper
-  double cos(double radians) => _cos(radians);
-  double sin(double radians) => _sin(radians);
+  double cos(double radians) => math.cos(radians);
+  double sin(double radians) => math.sin(radians);
 
   double _cos(double x) {
     return _taylorCos(x);
@@ -497,8 +511,12 @@ class MindmapProvider extends ChangeNotifier {
 
   double _taylorCos(double x) {
     // Normalize to [0, 2π]
-    while (x < 0) x += 2 * 3.14159265359;
-    while (x > 2 * 3.14159265359) x -= 2 * 3.14159265359;
+    while (x < 0) {
+      x += 2 * 3.14159265359;
+    }
+    while (x > 2 * 3.14159265359) {
+      x -= 2 * 3.14159265359;
+    }
 
     double result = 1.0;
     double term = 1.0;
@@ -511,8 +529,12 @@ class MindmapProvider extends ChangeNotifier {
 
   double _taylorSin(double x) {
     // Normalize to [0, 2π]
-    while (x < 0) x += 2 * 3.14159265359;
-    while (x > 2 * 3.14159265359) x -= 2 * 3.14159265359;
+    while (x < 0) {
+      x += 2 * 3.14159265359;
+    }
+    while (x > 2 * 3.14159265359) {
+      x -= 2 * 3.14159265359;
+    }
 
     double result = x;
     double term = x;
@@ -521,5 +543,12 @@ class MindmapProvider extends ChangeNotifier {
       result += term;
     }
     return result;
+  }
+
+  void updateMindmapTitle(String title) {
+    if (_currentMindmap == null) return;
+    _currentMindmap = _currentMindmap!.copyWith(title: title);
+    notifyListeners();
+    saveMindmap();
   }
 }

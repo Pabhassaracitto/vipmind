@@ -1,10 +1,11 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
+import '../../../app/theme/app_colors.dart';
+import '../../../data/models/connection_model.dart';
 import '../../../data/models/mindmap_model.dart';
 import '../../../data/models/node_model.dart';
-import '../../../data/models/connection_model.dart';
-import '../../../app/theme/app_colors.dart';
 
 class ConnectionPainter extends CustomPainter {
   final MindmapModel mindmap;
@@ -32,8 +33,8 @@ class ConnectionPainter extends CustomPainter {
             canvas,
             parent,
             node,
-            isHighlighted: selectedNodeId == node.id ||
-                selectedNodeId == parent.id,
+            isHighlighted:
+                selectedNodeId == node.id || selectedNodeId == parent.id,
           );
         }
       }
@@ -50,11 +51,11 @@ class ConnectionPainter extends CustomPainter {
   }
 
   void _drawConnection(
-      Canvas canvas,
-      NodeModel from,
-      NodeModel to, {
-        bool isHighlighted = false,
-      }) {
+    Canvas canvas,
+    NodeModel from,
+    NodeModel to, {
+    bool isHighlighted = false,
+  }) {
     final fromCenter = _transformPoint(from.center);
     final toCenter = _transformPoint(to.center);
 
@@ -65,7 +66,7 @@ class ConnectionPainter extends CustomPainter {
     final paint = Paint()
       ..color = isHighlighted
           ? Colors.white
-          : (isZenMode ? Colors.white38 : from.color.withOpacity(0.6))
+          : (isZenMode ? Colors.white38 : from.color.withValues(alpha: 0.6))
       ..strokeWidth = (isHighlighted ? 3.0 : 2.0) * scale
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -82,7 +83,7 @@ class ConnectionPainter extends CustomPainter {
     // Draw glow effect for highlighted connections
     if (isHighlighted) {
       final glowPaint = Paint()
-        ..color = Colors.white.withOpacity(0.3)
+        ..color = Colors.white.withValues(alpha: 0.3)
         ..strokeWidth = 8.0 * scale
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
@@ -92,11 +93,11 @@ class ConnectionPainter extends CustomPainter {
   }
 
   void _drawCustomConnection(
-      Canvas canvas,
-      ConnectionModel connection,
-      NodeModel from,
-      NodeModel to,
-      ) {
+    Canvas canvas,
+    ConnectionModel connection,
+    NodeModel from,
+    NodeModel to,
+  ) {
     final fromCenter = _transformPoint(from.center);
     final toCenter = _transformPoint(to.center);
 
@@ -104,7 +105,7 @@ class ConnectionPainter extends CustomPainter {
     final toPoint = _getEdgePoint(to, fromCenter);
 
     final paint = Paint()
-      ..color = connection.color.withOpacity(0.8)
+      ..color = connection.color.withValues(alpha: 0.8)
       ..strokeWidth = connection.strokeWidth * scale
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -167,9 +168,12 @@ class ConnectionPainter extends CustomPainter {
     }
 
     path.cubicTo(
-      control1.dx, control1.dy,
-      control2.dx, control2.dy,
-      to.dx, to.dy,
+      control1.dx,
+      control1.dy,
+      control2.dx,
+      control2.dy,
+      to.dx,
+      to.dy,
     );
 
     return path;
@@ -195,9 +199,12 @@ class ConnectionPainter extends CustomPainter {
     final dx = (to.dx - from.dx).abs() * 0.5;
 
     path.cubicTo(
-      from.dx + dx, from.dy,
-      to.dx - dx, to.dy,
-      to.dx, to.dy,
+      from.dx + dx,
+      from.dy,
+      to.dx - dx,
+      to.dy,
+      to.dx,
+      to.dy,
     );
 
     return path;
@@ -257,9 +264,8 @@ class ConnectionPainter extends CustomPainter {
       style: TextStyle(
         color: isZenMode ? Colors.white54 : AppColors.textSecondary,
         fontSize: 10 * scale,
-        backgroundColor: isZenMode
-            ? Colors.black54
-            : Colors.white.withOpacity(0.9),
+        backgroundColor:
+            isZenMode ? Colors.black54 : Colors.white.withValues(alpha: 0.9),
       ),
     );
 

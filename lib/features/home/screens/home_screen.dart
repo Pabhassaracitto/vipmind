@@ -1,16 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../app/routes.dart';
 import '../../../app/theme/app_colors.dart';
-import '../../../data/providers/mindmap_provider.dart';
 import '../../../data/models/mindmap_model.dart';
+import '../../../data/providers/mindmap_provider.dart';
+import '../widgets/home_drawer.dart';
+import '../widgets/home_header.dart';
 import '../widgets/mindmap_card.dart';
 import '../widgets/quick_actions.dart';
-import '../widgets/home_header.dart';
-import '../widgets/home_drawer.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late TabController _tabController;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   String _searchQuery = '';
-  bool _isGridView = true;
+  final bool _isGridView = true;
 
   @override
   void initState() {
@@ -149,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         if (_searchQuery.isNotEmpty) {
           mindmaps = mindmaps
               .where((m) =>
-              m.title.toLowerCase().contains(_searchQuery.toLowerCase()))
+                  m.title.toLowerCase().contains(_searchQuery.toLowerCase()))
               .toList();
         }
 
@@ -164,43 +164,44 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             padding: const EdgeInsets.all(16),
             child: _isGridView
                 ? GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 0.85,
-              ),
-              itemCount: mindmaps.length,
-              itemBuilder: (context, index) {
-                return FadeInUp(
-                  delay: Duration(milliseconds: 100 * index),
-                  child: MindmapCard(
-                    mindmap: mindmaps[index],
-                    onTap: () => _openMindmap(mindmaps[index]),
-                    onFavorite: () => _toggleFavorite(mindmaps[index]),
-                    onDelete: () => _deleteMindmap(mindmaps[index]),
-                  ),
-                );
-              },
-            )
-                : ListView.builder(
-              itemCount: mindmaps.length,
-              itemBuilder: (context, index) {
-                return FadeInUp(
-                  delay: Duration(milliseconds: 100 * index),
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: MindmapCard(
-                      mindmap: mindmaps[index],
-                      isListView: true,
-                      onTap: () => _openMindmap(mindmaps[index]),
-                      onFavorite: () => _toggleFavorite(mindmaps[index]),
-                      onDelete: () => _deleteMindmap(mindmaps[index]),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 0.85,
                     ),
+                    itemCount: mindmaps.length,
+                    itemBuilder: (context, index) {
+                      return FadeInUp(
+                        delay: Duration(milliseconds: 100 * index),
+                        child: MindmapCard(
+                          mindmap: mindmaps[index],
+                          onTap: () => _openMindmap(mindmaps[index]),
+                          onFavorite: () => _toggleFavorite(mindmaps[index]),
+                          onDelete: () => _deleteMindmap(mindmaps[index]),
+                        ),
+                      );
+                    },
+                  )
+                : ListView.builder(
+                    itemCount: mindmaps.length,
+                    itemBuilder: (context, index) {
+                      return FadeInUp(
+                        delay: Duration(milliseconds: 100 * index),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: MindmapCard(
+                            mindmap: mindmaps[index],
+                            isListView: true,
+                            onTap: () => _openMindmap(mindmaps[index]),
+                            onFavorite: () => _toggleFavorite(mindmaps[index]),
+                            onDelete: () => _deleteMindmap(mindmaps[index]),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         );
       },
@@ -215,7 +216,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.1),
+              color: AppColors.primaryBlue.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -294,9 +295,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (user == null) return;
 
     final mindmap = await context.read<MindmapProvider>().createMindmap(
-      title: 'Untitled Mindmap',
-      ownerId: user.uid,
-    );
+          title: 'Untitled Mindmap',
+          ownerId: user.uid,
+        );
 
     if (mindmap != null && mounted) {
       Navigator.pushNamed(
@@ -485,9 +486,9 @@ class _OptionTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [

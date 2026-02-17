@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'app_colors.dart';
 
 class AppTheme {
@@ -15,7 +16,6 @@ class AppTheme {
         secondary: AppColors.accentYellow,
         tertiary: AppColors.creativePurple,
         surface: AppColors.surfaceLight,
-        background: AppColors.backgroundLight,
         error: AppColors.errorRed,
       ),
       textTheme: _textTheme,
@@ -40,7 +40,6 @@ class AppTheme {
         secondary: AppColors.accentYellow,
         tertiary: AppColors.creativePurple,
         surface: AppColors.surfaceDark,
-        background: AppColors.backgroundDark,
         error: AppColors.errorRed,
       ),
       textTheme: _textThemeDark,
@@ -184,23 +183,23 @@ class AppTheme {
   }
 
   // Card Theme
-  static CardThemeData get _cardThemeDark {  // Đổi từ CardTheme
-    return CardThemeData(  // Đổi từ CardTheme
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      color: AppColors.surfaceLight,
-    );
-  }
-
-  static CardThemeData get _cardTheme {  // Đổi từ CardTheme
-    return CardThemeData(  // Đổi từ CardTheme
+  static CardThemeData get _cardThemeDark {
+    return CardThemeData(
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       color: AppColors.surfaceDark,
+    );
+  }
+
+  static CardThemeData get _cardTheme {
+    return CardThemeData(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      color: AppColors.surfaceLight,
     );
   }
 

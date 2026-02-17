@@ -1,8 +1,8 @@
+//node_editor_panel.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
-import '../../../data/models/node_model.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../data/models/node_model.dart';
 
 class NodeEditorPanel extends StatefulWidget {
   final NodeModel? node;
@@ -32,7 +32,8 @@ class _NodeEditorPanelState extends State<NodeEditorPanel> {
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.node?.text ?? '');
-    _descriptionController = TextEditingController(text: widget.node?.description ?? '');
+    _descriptionController =
+        TextEditingController(text: widget.node?.description ?? '');
   }
 
   @override
@@ -69,7 +70,7 @@ class _NodeEditorPanelState extends State<NodeEditorPanel> {
         color: Theme.of(context).scaffoldBackgroundColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha:0.15),
             blurRadius: 20,
             offset: const Offset(-5, 0),
           ),
@@ -87,7 +88,7 @@ class _NodeEditorPanelState extends State<NodeEditorPanel> {
             ),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [node.color, node.color.withOpacity(0.8)],
+                colors: [node.color, node.color.withValues(alpha:0.8)],
               ),
             ),
             child: Row(
@@ -116,7 +117,7 @@ class _NodeEditorPanelState extends State<NodeEditorPanel> {
               padding: const EdgeInsets.all(20),
               children: [
                 // Title
-                _SectionTitle(title: 'Title'),
+                const _SectionTitle(title: 'Title'),
                 const SizedBox(height: 8),
                 TextField(
                   controller: _titleController,
@@ -134,7 +135,7 @@ class _NodeEditorPanelState extends State<NodeEditorPanel> {
                 const SizedBox(height: 24),
 
                 // Description
-                _SectionTitle(title: 'Description'),
+                const _SectionTitle(title: 'Description'),
                 const SizedBox(height: 8),
                 TextField(
                   controller: _descriptionController,
@@ -153,7 +154,7 @@ class _NodeEditorPanelState extends State<NodeEditorPanel> {
                 const SizedBox(height: 24),
 
                 // Color
-                _SectionTitle(title: 'Color'),
+                const _SectionTitle(title: 'Color'),
                 const SizedBox(height: 12),
                 _ColorPicker(
                   selectedColor: node.color,
@@ -165,7 +166,7 @@ class _NodeEditorPanelState extends State<NodeEditorPanel> {
                 const SizedBox(height: 24),
 
                 // Shape
-                _SectionTitle(title: 'Shape'),
+                const _SectionTitle(title: 'Shape'),
                 const SizedBox(height: 12),
                 _ShapePicker(
                   selectedShape: node.shape,
@@ -177,7 +178,7 @@ class _NodeEditorPanelState extends State<NodeEditorPanel> {
                 const SizedBox(height: 24),
 
                 // Type
-                _SectionTitle(title: 'Node Type'),
+                const _SectionTitle(title: 'Node Type'),
                 const SizedBox(height: 12),
                 _TypePicker(
                   selectedType: node.type,
@@ -195,12 +196,12 @@ class _NodeEditorPanelState extends State<NodeEditorPanel> {
                   value: node.isAnkiCard,
                   onChanged: (value) {
                     _updateNode((n) => n.copyWith(
-                      isAnkiCard: value,
-                      ankiFront: value ? n.text : null,
-                      ankiBack: value ? n.description : null,
-                    ));
+                          isAnkiCard: value,
+                          ankiFront: value ? n.text : null,
+                          ankiBack: value ? n.description : null,
+                        ));
                   },
-                  activeColor: AppColors.primaryBlue,
+                  activeThumbColor: AppColors.primaryBlue,
                 ),
 
                 const SizedBox(height: 32),
@@ -288,12 +289,11 @@ class _ColorPicker extends StatelessWidget {
             decoration: BoxDecoration(
               color: color,
               shape: BoxShape.circle,
-              border: isSelected
-                  ? Border.all(color: Colors.white, width: 3)
-                  : null,
+              border:
+                  isSelected ? Border.all(color: Colors.white, width: 3) : null,
               boxShadow: [
                 BoxShadow(
-                  color: color.withOpacity(isSelected ? 0.5 : 0.3),
+                  color: color.withValues(alpha:isSelected ? 0.5 : 0.3),
                   blurRadius: isSelected ? 12 : 6,
                   spreadRadius: isSelected ? 2 : 0,
                 ),
@@ -344,7 +344,7 @@ class _ShapePicker extends StatelessWidget {
               border: Border.all(
                 color: isSelected
                     ? AppColors.primaryBlue
-                    : AppColors.textSecondary.withOpacity(0.3),
+                    : AppColors.textSecondary.withValues(alpha:0.3),
               ),
             ),
             child: Icon(
@@ -368,11 +368,16 @@ class _TypePicker extends StatelessWidget {
   });
 
   static const Map<NodeType, _TypeInfo> _typeInfo = {
-    NodeType.idea: _TypeInfo(Icons.lightbulb_outline, 'Idea', AppColors.accentYellow),
-    NodeType.task: _TypeInfo(Icons.check_circle_outline, 'Task', AppColors.calmGreen),
-    NodeType.question: _TypeInfo(Icons.help_outline, 'Question', AppColors.warningOrange),
-    NodeType.note: _TypeInfo(Icons.note_outlined, 'Note', AppColors.primaryBlue),
-    NodeType.image: _TypeInfo(Icons.image_outlined, 'Image', AppColors.creativePurple),
+    NodeType.idea:
+        _TypeInfo(Icons.lightbulb_outline, 'Idea', AppColors.accentYellow),
+    NodeType.task:
+        _TypeInfo(Icons.check_circle_outline, 'Task', AppColors.calmGreen),
+    NodeType.question:
+        _TypeInfo(Icons.help_outline, 'Question', AppColors.warningOrange),
+    NodeType.note:
+        _TypeInfo(Icons.note_outlined, 'Note', AppColors.primaryBlue),
+    NodeType.image:
+        _TypeInfo(Icons.image_outlined, 'Image', AppColors.creativePurple),
     NodeType.audio: _TypeInfo(Icons.mic_outlined, 'Audio', AppColors.errorRed),
   };
 
@@ -394,7 +399,7 @@ class _TypePicker extends StatelessWidget {
               color: isSelected ? info.color : Colors.transparent,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isSelected ? info.color : info.color.withOpacity(0.3),
+                color: isSelected ? info.color : info.color.withValues(alpha:0.3),
               ),
             ),
             child: Row(

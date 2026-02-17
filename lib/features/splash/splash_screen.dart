@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 import '../../app/routes.dart';
 import '../../app/theme/app_colors.dart';
@@ -163,7 +163,7 @@ class _SplashScreenState extends State<SplashScreen>
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryBlue.withOpacity(0.5),
+            color: AppColors.primaryBlue.withValues(alpha: 0.5),
             blurRadius: 30,
             spreadRadius: 10,
           ),
@@ -182,7 +182,8 @@ class _NeuralLoadingIndicator extends StatefulWidget {
   const _NeuralLoadingIndicator();
 
   @override
-  State<_NeuralLoadingIndicator> createState() => _NeuralLoadingIndicatorState();
+  State<_NeuralLoadingIndicator> createState() =>
+      _NeuralLoadingIndicatorState();
 }
 
 class _NeuralLoadingIndicatorState extends State<_NeuralLoadingIndicator>
@@ -225,7 +226,7 @@ class _NeuralLoadingIndicatorState extends State<_NeuralLoadingIndicator>
                 height: 12 * scale,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.5 + scale * 0.5),
+                  color: Colors.white.withValues(alpha: 0.5 + scale * 0.5),
                 ),
               );
             },

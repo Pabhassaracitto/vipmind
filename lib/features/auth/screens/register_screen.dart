@@ -53,7 +53,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       // Create user
-      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      final credential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
@@ -233,8 +234,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           color: AppColors.textLightSecondary,
                         ),
                         onPressed: () {
-                          setState(() =>
-                          _obscureConfirmPassword = !_obscureConfirmPassword);
+                          setState(() => _obscureConfirmPassword =
+                              !_obscureConfirmPassword);
                         },
                       ),
                       validator: (value) {
@@ -349,9 +350,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Widget _buildHeader() {
-    return Column(
+    return const Column(
       children: [
-        const Text(
+        Text(
           'Create Account',
           style: TextStyle(
             fontSize: 28,
@@ -359,8 +360,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             color: Colors.white,
           ),
         ),
-        const SizedBox(height: 8),
-        const Text(
+        SizedBox(height: 8),
+        Text(
           'Start your creative journey with NeuroMindmap',
           style: TextStyle(
             fontSize: 14,

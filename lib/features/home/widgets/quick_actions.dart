@@ -42,7 +42,8 @@ class QuickActions extends StatelessWidget {
             icon: Icons.dashboard_customize,
             label: 'Templates',
             color: AppColors.warningOrange,
-            onTap: () => Navigator.pushNamed(context, AppRoutes.templateGallery),
+            onTap: () =>
+                Navigator.pushNamed(context, AppRoutes.templateGallery),
           ),
         ],
       ),
@@ -75,14 +76,14 @@ class _QuickActionCard extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [color, color.withOpacity(0.8)],
+              colors: [color, color.withValues(alpha: 0.8)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.3),
+                color: color.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),

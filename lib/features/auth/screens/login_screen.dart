@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 import '../../../app/routes.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../core/utils/validators.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
-import '../../../core/utils/validators.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -253,7 +253,7 @@ class _LoginScreenState extends State<LoginScreen> {
             gradient: AppColors.primaryGradient,
             boxShadow: [
               BoxShadow(
-                color: AppColors.primaryBlue.withOpacity(0.4),
+                color: AppColors.primaryBlue.withValues(alpha: 0.4),
                 blurRadius: 20,
                 spreadRadius: 5,
               ),
@@ -297,7 +297,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Expanded(
           child: Container(
             height: 1,
-            color: AppColors.textLightSecondary.withOpacity(0.3),
+            color: AppColors.textLightSecondary.withValues(alpha: 0.3),
           ),
         ),
         const Padding(
@@ -313,7 +313,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Expanded(
           child: Container(
             height: 1,
-            color: AppColors.textLightSecondary.withOpacity(0.3),
+            color: AppColors.textLightSecondary.withValues(alpha: 0.3),
           ),
         ),
       ],
@@ -363,7 +363,7 @@ class _SocialButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
         decoration: BoxDecoration(
           border: Border.all(
-            color: AppColors.textLightSecondary.withOpacity(0.3),
+            color: AppColors.textLightSecondary.withValues(alpha: 0.3),
           ),
           borderRadius: BorderRadius.circular(12),
         ),

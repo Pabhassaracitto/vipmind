@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class CollaborationProvider extends ChangeNotifier {
   List<String> _activeUsers = [];
-  Map<String, Offset> _userCursors = {};
+  final Map<String, Offset> _userCursors = {};
   bool _isConnected = false;
 
   List<String> get activeUsers => _activeUsers;
@@ -19,7 +19,7 @@ class CollaborationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateCursor(String userId, Offset position) {  // Sửa từ oderId thành userId
+  void updateCursor(String userId, Offset position) {
     _userCursors[userId] = position;
     notifyListeners();
   }

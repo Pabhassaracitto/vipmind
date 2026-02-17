@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../data/models/node_model.dart';
-import '../../../app/theme/app_colors.dart';
-
 class NodeWidget extends StatefulWidget {
   final NodeModel node;
   final bool isSelected;
@@ -97,19 +95,19 @@ class _NodeWidgetState extends State<NodeWidget>
         end: Alignment.bottomRight,
         colors: [
           baseColor,
-          baseColor.withOpacity(0.85),
+          baseColor.withValues(alpha:0.85),
         ],
       ),
       borderRadius: _getBorderRadius(),
       border: widget.isSelected
           ? Border.all(color: Colors.white, width: 3)
           : widget.isDragging
-          ? Border.all(color: Colors.white70, width: 2)
-          : null,
+              ? Border.all(color: Colors.white70, width: 2)
+              : null,
       boxShadow: [
         // Base shadow
         BoxShadow(
-          color: baseColor.withOpacity(widget.isZenMode ? 0.5 : 0.3),
+          color: baseColor.withValues(alpha:widget.isZenMode ? 0.5 : 0.3),
           blurRadius: isHighlighted ? 20 : 12,
           spreadRadius: isHighlighted ? 4 : 2,
           offset: const Offset(0, 4),
@@ -117,7 +115,7 @@ class _NodeWidgetState extends State<NodeWidget>
         // Glow effect on hover
         if (_isHovered || widget.isSelected)
           BoxShadow(
-            color: baseColor.withOpacity(0.4 * _glowAnimation.value),
+            color: baseColor.withValues(alpha:0.4 * _glowAnimation.value),
             blurRadius: 30,
             spreadRadius: 8,
           ),
@@ -187,7 +185,7 @@ class _NodeWidgetState extends State<NodeWidget>
               widget.node.description!,
               style: GoogleFonts.inter(
                 fontSize: 12,
-                color: widget.node.textColor.withOpacity(0.8),
+                color: widget.node.textColor.withValues(alpha:0.8),
                 height: 1.4,
               ),
               maxLines: 3,
@@ -277,7 +275,7 @@ class _NodeWidgetState extends State<NodeWidget>
   String _formatDuration(Duration duration) {
     final minutes = duration.inMinutes;
     final seconds = duration.inSeconds % 60;
-    return '${minutes}:${seconds.toString().padLeft(2, '0')}';
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 }
 
@@ -296,7 +294,7 @@ class _IndicatorBadge extends StatelessWidget {
       margin: const EdgeInsets.only(right: 8),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withValues(alpha:0.2),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

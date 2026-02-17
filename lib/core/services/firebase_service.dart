@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -62,6 +61,7 @@ class FirebaseService {
       firestore.collection('templates');
 
   // Get user mindmaps collection
-  static CollectionReference<Map<String, dynamic>> userMindmaps(String userId) =>
+  static CollectionReference<Map<String, dynamic>> userMindmaps(
+          String userId) =>
       firestore.collection('users').doc(userId).collection('mindmaps');
 }

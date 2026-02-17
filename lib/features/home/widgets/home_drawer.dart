@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 import '../../../app/routes.dart';
 import '../../../app/theme/app_colors.dart';
@@ -37,14 +37,14 @@ class HomeDrawer extends StatelessWidget {
                       : null,
                   child: user?.photoURL == null
                       ? Text(
-                    user?.displayName?.substring(0, 1).toUpperCase() ??
-                        'U',
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryBlue,
-                    ),
-                  )
+                          user?.displayName?.substring(0, 1).toUpperCase() ??
+                              'U',
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primaryBlue,
+                          ),
+                        )
                       : null,
                 ),
                 const SizedBox(height: 16),
@@ -59,7 +59,7 @@ class HomeDrawer extends StatelessWidget {
                 Text(
                   user?.email ?? '',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 14,
                   ),
                 ),

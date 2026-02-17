@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../app/theme/app_colors.dart';
 
 class CustomButton extends StatefulWidget {
@@ -101,22 +102,22 @@ class _CustomButtonState extends State<CustomButton>
       width: widget.width,
       height: widget.height,
       decoration: BoxDecoration(
-        gradient: isEnabled
-            ? (widget.gradient ?? AppColors.primaryGradient)
-            : null,
+        gradient:
+            isEnabled ? (widget.gradient ?? AppColors.primaryGradient) : null,
         color: isEnabled
             ? null
-            : (widget.backgroundColor ?? AppColors.primaryBlue).withOpacity(0.5),
+            : (widget.backgroundColor ?? AppColors.primaryBlue)
+                .withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(widget.borderRadius),
         boxShadow: isEnabled
             ? [
-          BoxShadow(
-            color: (widget.backgroundColor ?? AppColors.primaryBlue)
-                .withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ]
+                BoxShadow(
+                  color: (widget.backgroundColor ?? AppColors.primaryBlue)
+                      .withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ]
             : null,
       ),
       child: _buildContent(isEnabled, Colors.white),
@@ -133,13 +134,13 @@ class _CustomButtonState extends State<CustomButton>
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(widget.borderRadius),
         border: Border.all(
-          color: isEnabled ? color : color.withOpacity(0.5),
+          color: isEnabled ? color : color.withValues(alpha: 0.5),
           width: 2,
         ),
       ),
       child: _buildContent(
         isEnabled,
-        isEnabled ? color : color.withOpacity(0.5),
+        isEnabled ? color : color.withValues(alpha: 0.5),
       ),
     );
   }
@@ -148,34 +149,34 @@ class _CustomButtonState extends State<CustomButton>
     return Center(
       child: widget.isLoading
           ? SizedBox(
-        width: 24,
-        height: 24,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation<Color>(contentColor),
-        ),
-      )
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(contentColor),
+              ),
+            )
           : Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (widget.icon != null) ...[
-            Icon(
-              widget.icon,
-              color: widget.textColor ?? contentColor,
-              size: 20,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.icon != null) ...[
+                  Icon(
+                    widget.icon,
+                    color: widget.textColor ?? contentColor,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Text(
+                  widget.text,
+                  style: TextStyle(
+                    color: widget.textColor ?? contentColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-          ],
-          Text(
-            widget.text,
-            style: TextStyle(
-              color: widget.textColor ?? contentColor,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

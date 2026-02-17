@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
+
 import 'audio_note_model.dart';
 
 enum NodeShape { rectangle, roundedRectangle, ellipse, diamond, hexagon }
+
 enum NodeType { idea, task, question, note, image, audio, link }
 
 class NodeModel {
@@ -70,9 +72,9 @@ class NodeModel {
 
   // Center point of the node
   Offset get center => Offset(
-    position.dx + size.width / 2,
-    position.dy + size.height / 2,
-  );
+        position.dx + size.width / 2,
+        position.dy + size.height / 2,
+      );
 
   // Connection points
   Offset get topCenter => Offset(position.dx + size.width / 2, position.dy);
@@ -84,11 +86,11 @@ class NodeModel {
 
   // Bounding rect
   Rect get bounds => Rect.fromLTWH(
-    position.dx,
-    position.dy,
-    size.width,
-    size.height,
-  );
+        position.dx,
+        position.dy,
+        size.width,
+        size.height,
+      );
 
   // Copy with
   NodeModel copyWith({
@@ -183,14 +185,20 @@ class NodeModel {
   factory NodeModel.fromJson(Map<String, dynamic> json) {
     return NodeModel(
       id: json['id'],
-      text: json['text'],
+      text: json['text'] ?? 'New Node',
       description: json['description'],
-      position: Offset(json['positionX'], json['positionY']),
-      size: Size(json['width'], json['height']),
-      color: Color(json['color']),
-      textColor: Color(json['textColor']),
-      shape: NodeShape.values[json['shape']],
-      type: NodeType.values[json['type']],
+      position: Offset(
+        (json['positionX'] ?? 0).toDouble(),
+        (json['positionY'] ?? 0).toDouble(),
+      ),
+      size: Size(
+        (json['width'] ?? 150).toDouble(),
+        (json['height'] ?? 60).toDouble(),
+      ),
+      color: Color(json['color'] ?? 0xFF4A6FA5),
+      textColor: Color(json['textColor'] ?? 0xFFFFFFFF),
+      shape: NodeShape.values[json['shape'] ?? 1],
+      type: NodeType.values[json['type'] ?? 0],
       iconName: json['iconName'],
       imageUrl: json['imageUrl'],
       audioNote: json['audioNote'] != null
