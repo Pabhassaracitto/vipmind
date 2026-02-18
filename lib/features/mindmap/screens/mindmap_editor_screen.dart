@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/routes.dart';
@@ -14,6 +15,7 @@ import '../widgets/minimap_widget.dart';
 import '../widgets/node_editor_panel.dart';
 import '../widgets/toolbar_widget.dart';
 import '../widgets/zoom_controls.dart';
+
 class MindmapEditorScreen extends StatefulWidget {
   final String? mindmapId;
 
@@ -116,18 +118,18 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
 
   Future<void> _loadMindmap() async {
     if (widget.mindmapId != null) {
-      await context.read<MindmapProvider>().loadMindmap(widget.mindmapId!);
-    }
-  }
+      final provider = context.read<MindmapProvider>();
 
-  void _togglePanel() {
-    setState(() {
-      _isPanelOpen = !_isPanelOpen;
-    });
-    if (_isPanelOpen) {
-      _panelController.forward();
-    } else {
-      _panelController.reverse();
+      // Check if mindmap is already loaded (from createMindmap)
+      if (provider.currentMindmap?.id == widget.mindmapId) {
+        // Mindmap already loaded, no need to reload
+        debugPrint('Mindmap already loaded: ${widget.mindmapId}');
+        return;
+      }
+
+      // Load from Firestore
+      debugPrint('Loading mindmap from Firestore: ${widget.mindmapId}');
+      await provider.loadMindmap(widget.mindmapId!);
     }
   }
 
@@ -386,7 +388,7 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
             end: Alignment.bottomCenter,
             colors: [
               Theme.of(context).scaffoldBackgroundColor,
-              Theme.of(context).scaffoldBackgroundColor.withValues(alpha:0),
+              Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0),
             ],
           ),
         ),
@@ -405,7 +407,7 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha:0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 8,
                     ),
                   ],
@@ -428,7 +430,7 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha:0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 8,
                       ),
                     ],
@@ -570,14 +572,16 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-  onPressed: () {
-    if (controller.text.isNotEmpty) {
-      context.read<MindmapProvider>().updateMindmapTitle(controller.text);
-      Navigator.pop(context);
-    }
-  },
-  child: const Text('Save'),
-),
+            onPressed: () {
+              if (controller.text.isNotEmpty) {
+                context
+                    .read<MindmapProvider>()
+                    .updateMindmapTitle(controller.text);
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Save'),
+          ),
         ],
       ),
     );
@@ -677,7 +681,14 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
   }
 
   void _showAISuggestions() {
-    // TODO: Implement AI suggestions
+    // Ví dụ cách truy cập key của bạn
+    final zaloKey = dotenv.env['ZALO_AI_KEY'];
+    final fptKey = dotenv.env['FPT_AI_KEY'];
+
+    debugPrint('Zalo AI Key: $zaloKey');
+    debugPrint('FPT AI Key: $fptKey');
+
+    // TODO: Implement AI suggestions using the keys
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('AI Suggestions coming soon!')),
     );
@@ -788,7 +799,7 @@ class _OptionTile extends StatelessWidget {
       title: Text(title,
           style: TextStyle(color: color, fontWeight: FontWeight.w500)),
       subtitle: Text(subtitle,
-          style: TextStyle(fontSize: 12, color: color?.withValues(alpha:0.7))),
+          style: TextStyle(fontSize: 12, color: color?.withValues(alpha: 0.7))),
       onTap: onTap,
     );
   }

@@ -12,7 +12,20 @@
           "package_name": "com.vipmind"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "419634963419-nove0apna8uio97p0chaods03fo35621.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vipmind",
+            "certificate_hash": "8a1bc02e5c8f2509eb18624fb5f4eb68df0a6127"
+          }
+        },
+        {
+          "client_id": "419634963419-0722699tskucafucvel0njc1bd1tg55s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCQIvuEM_Yc-jD5iVhpxpvnydJ5ZJ9YYRw"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "419634963419-0722699tskucafucvel0njc1bd1tg55s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

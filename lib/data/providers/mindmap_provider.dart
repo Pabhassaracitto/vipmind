@@ -1,10 +1,12 @@
 //mindmap_provider.dart
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+
+import '../models/connection_model.dart';
 import '../models/mindmap_model.dart';
 import '../models/node_model.dart';
-import '../models/connection_model.dart';
 import '../repositories/mindmap_repository.dart';
-import 'dart:math' as math;
 
 class MindmapProvider extends ChangeNotifier {
   final MindmapRepository _repository = MindmapRepository();
@@ -85,9 +87,18 @@ class MindmapProvider extends ChangeNotifier {
         ownerId: ownerId,
         rootText: rootText,
       );
+
+      // Save to Firestore
       await _repository.saveMindmap(mindmap);
+
+      // Add to list
       _mindmaps.insert(0, mindmap);
+
+      // *** FIX: Set as current mindmap immediately ***
       _currentMindmap = mindmap;
+      _undoStack.clear();
+      _redoStack.clear();
+
       notifyListeners();
       return mindmap;
     } catch (e) {
@@ -215,6 +226,17 @@ class MindmapProvider extends ChangeNotifier {
     if (_currentMindmap == null) return;
     _saveState();
     _currentMindmap!.updateNode(updatedNode);
+    notifyListeners();
+  }
+
+  // Update node text
+  void updateNodeText(String nodeId, String newText) {
+    if (_currentMindmap == null) return;
+    final node = _currentMindmap!.nodes[nodeId];
+    if (node == null) return;
+
+    _saveState();
+    _currentMindmap!.nodes[nodeId] = node.copyWith(text: newText);
     notifyListeners();
   }
 
