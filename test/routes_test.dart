@@ -172,11 +172,11 @@ void main() {
 
       // Diagnostic: if anything above fails, this lands in the CI report and
       // shows exactly which strings the screen produced.
-      debugPrint('ZEN TEXTS: ' +
-          tester
-              .widgetList<Text>(find.byType(Text))
-              .map((t) => t.data ?? '<rich>')
-              .join(' | '));
+      final zenTexts = tester
+          .widgetList<Text>(find.byType(Text))
+          .map((t) => t.data ?? '<rich>')
+          .join(' | ');
+      debugPrint('ZEN TEXTS: $zenTexts');
     });
 
     testWidgets('zen mode keeps a captured thought on screen', (tester) async {
