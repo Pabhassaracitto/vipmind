@@ -182,7 +182,6 @@ class _MindmapCanvasState extends State<MindmapCanvas>
           onPanStart: (details) {
             setState(() {
               _draggingNodeId = node.id;
-              _dragStartPosition = node.position;
             });
           },
           onPanUpdate: (details) {
@@ -194,7 +193,6 @@ class _MindmapCanvasState extends State<MindmapCanvas>
           onPanEnd: (details) {
             setState(() {
               _draggingNodeId = null;
-              _dragStartPosition = null;
             });
           },
           child: NodeWidget(
