@@ -305,3 +305,63 @@ theme dùng `google_fonts`.
 - `.github/` — chỉ có `copilot-instructions.md`; không có `workflows/`.
 - Git: `git log --all --oneline` → 1 commit `b79f138` (28/01/2026). GitHub API `pushedAt` = 18/02/2026.
 - Linear: không có project/issue nào khớp "vipmind" hoặc "mindmap".
+
+---
+
+## HẬU KỲ (23/10/2026) — Phase 0 + Phase 1 đã thực thi và **đã được compiler xác nhận**
+
+Phần trên là báo cáo khảo sát. Phần này ghi lại kết quả sau khi làm thật.
+
+### Trạng thái CI (bằng chứng, không phải suy đoán)
+
+| Bước | Kết quả |
+|---|---|
+| `flutter pub get` | ✅ resolve sạch với 10 package runtime |
+| `flutter analyze` | ✅ **"No issues found!"** — 0 error / 0 warning / 0 info |
+| `flutter test` | ✅ **"All tests passed!" — 108 test** (từ 1 file test hỏng ban đầu) |
+| `dart format --set-exit-if-changed` | ⚠️ đỏ (đang để `continue-on-error`) → card IN4-131 |
+| Build APK / chạy máy thật | ⏳ chưa — cần Android SDK + thiết bị (IN4-130) |
+
+PR: https://github.com/Pabhassaracitto/vipmind/pull/1 ·
+Mỗi lần CI chạy đều **tự đăng comment** lên PR với toàn bộ lỗi (`.github/workflows/ci.yml`,
+bước "Report results on the PR"). Lý do: log thô và artifact của GitHub Actions nằm ở
+blob host không đọc được từ môi trường agent, còn API annotation thì **giới hạn 10 dòng**.
+
+### 4 bug THẬT mà chỉ compiler/test mới lộ ra (không có trong khảo sát ban đầu)
+
+1. **`MindmapModel.removeNode()` ném `ConcurrentModificationError`** — hàm lặp qua
+   `node.childrenIds` trong khi lời gọi đệ quy xoá phần tử khỏi chính list đó
+   (`parent.childrenIds.remove(nodeId)`). Nghĩa là **bấm xoá một node có con là crash app**.
+   Test `removeNode also removes descendants` bắt được; diagnostic in ra
+   `REMOVENODE before:` mà không có `after:` → xác định được chỗ ném.
+2. **`firestoreDate(millis)` trả DateTime local** trong khi các nhánh khác trả UTC →
+   cùng một thời điểm nhưng so sánh không bằng nhau trên máy không ở múi giờ UTC.
+   Đã chuẩn hoá **mọi nhánh về UTC**.
+3. **Nút "Save" trong dialog đổi tên map là code chết** — `final updated = mindmap.copyWith(...)`
+   rồi `context.read<MindmapProvider>().updateNode;` (tham chiếu hàm, **không gọi**).
+   Đã thêm `MindmapProvider.renameTitle()` dùng `MindmapRepository.updateTitle()` có sẵn.
+4. **`case AppRoutes.settings:` không compile** (constant pattern không được là
+   prefixed identifier). Đổi tên tham số thành `routeSettings` thì `case settings:`
+   lại biến thành **variable pattern** — nó *bind* thay vì so sánh, nên sẽ nuốt mọi
+   route còn lại (mọi route lạ đều mở Settings). Đã đổi hằng thành
+   `AppRoutes.settingsRoute`.
+
+Ngoài ra: `Color.value` deprecated → `toARGB32()`; `WidgetsBinding.instance.window`
+deprecated → `PlatformDispatcher.instance.views.first`; `AppFonts.textTheme()` phải
+set `fontFamily` **từng slot** vì `TextTheme().apply(fontFamily:)` bỏ qua slot null
+(nên font Inter bundled trước đó không hề được áp dụng).
+
+### Hai bài học về test (đã ghi vào `docs/AGENT_NOTES.md`)
+
+* `MaterialApp(initialRoute: '/anki')` **không chỉ** dựng `/anki`: Flutter tách route
+  sâu thành từng đoạn và dựng cả route `/` — ở app này là SplashScreen, và timer 3s
+  của nó làm test fail với "A Timer is still pending". Test phải pump với `home:` rồi
+  điều hướng bằng `Navigator.pushNamed`.
+* `Timestamp.toDate()` trả DateTime **múi giờ local** cho cùng một thời điểm, và
+  so sánh DateTime của Dart nhạy với múi giờ → test phải so `millisecondsSinceEpoch`.
+
+### Việc còn lại (không đổi so với kế hoạch)
+
+IN4-130 build APK + nghiệm thu trên máy thật · IN4-131 `dart format` + bật blocking ·
+IN4-126/132/133/134 Firebase iOS + rules/indexes + Email-Password ·
+IN4-127 chọn mũi nhọn A/B/C · IN4-128 sẵn sàng phát hành.
