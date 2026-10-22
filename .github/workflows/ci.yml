@@ -46,33 +46,71 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # `flutter analyze` prints "error • msg • path:line:col • rule", which
-      # GitHub cannot turn into annotations on its own. Re-emitting them as
-      # `::error file=...,line=...` makes every failure readable from
-      # `GET /check-runs/{id}/annotations` — the raw job log lives on a blob
-      # host that tooling frequently cannot reach.
+      # The analyzer output format changed between Flutter releases
+      # (3.35 prints "[rule] error \u2022 message \u2022 path:line:col"), and GitHub
+      # cannot turn any of it into annotations by itself. The raw job log lives
+      # on a blob host that tooling frequently cannot reach, so findings are
+      # re-emitted here as `::error file=...,line=...` (readable from
+      # GET /check-runs/{id}/annotations). Any severity line the parser does not
+      # recognise is still emitted as a title-less annotation, so the output can
+      # never disappear silently.
       - name: Analyze (blocking)
         run: |
           set +e
           flutter analyze --no-pub 2>&1 | tee analyze.txt
           code=${PIPESTATUS[0]}
-          python3 - <<'PYEOF'
-          import re
-          for raw in open('analyze.txt', encoding='utf-8', errors='replace'):
-              line = raw.rstrip()
-              m = re.search(r'\b(error|warning|info)\s*\u2022\s*(.*?)\s*\u2022\s*([^:\s]+):(\d+):(\d+)\s*\u2022\s*([\w-]+)\s*$', line)
-              if not m:
+          ANALYZE_EXIT=$code python3 - <<'PYEOF'
+          import os, re
+
+          code = os.environ.get('ANALYZE_EXIT', '0')
+          lines = open('analyze.txt', encoding='utf-8', errors='replace').read().split('\n')
+
+          bullet = '\u2022'
+          parsed = 0
+          recognised = re.compile(
+              r'\[(?P<rule>[\w.-]+)\]\s+'
+              r'(?P<level>error|warning|info)\s*' + bullet + r'\s*'
+              r'(?P<msg>.*?)\s*' + bullet + r'\s*'
+              r'(?P<path>.+?):(?P<line>\d+):(?P<col>\d+)\s*$'
+          )
+          loose = re.compile(
+              r'\b(?P<level>error|warning|info)\s*' + bullet + r'\s*'
+              r'(?P<msg>.*?)\s*' + bullet + r'\s*'
+              r'(?P<path>.+?):(?P<line>\d+):(?P<col>\d+)\s*$'
+          )
+
+          def esc(text):
+              return (text.replace('%', '%25').replace('\r', ' ')
+                          .replace('\n', ' ').replace(':', '%3A').replace(',', '%2C'))
+
+          for raw in lines:
+              line = raw.strip()
+              if not line:
                   continue
-              level, msg, path, ln, col, rule = m.groups()
-              msg = msg.replace('%', '%25').replace('\r', ' ').replace('\n', ' ').replace(':', '%3A').replace(',', '%2C')
-              print(f'::{level} file={path},line={ln},col={col}::{rule}: {msg}')
+              m = recognised.search(line) or loose.search(line)
+              if m:
+                  parsed += 1
+                  level = m.group('level')
+                  rule = m.groupdict().get('rule') or ''
+                  msg = f"{rule}: {m.group('msg')}" if rule else m.group('msg')
+                  print(f"::{level} file={m.group('path')},line={m.group('line')},"
+                        f"col={m.group('col')}::{esc(msg)}")
+              elif re.search(r'\b(error|warning|info)\b', line) and bullet in line:
+                  parsed += 1
+                  print(f'::error::{esc(line[:400])}')
+
+          # Safety net: if the parse found nothing but analyze failed, dump the
+          # tail so the failure is never opaque.
+          if code != '0' and parsed == 0:
+              print('::error::analyze failed but no severity line was parsed; raw tail below')
+              for raw in lines[-60:]:
+                  if raw.strip():
+                      print(f'::error::{esc(raw.strip()[:400])}')
           PYEOF
           {
             echo "## flutter analyze (exit $code)"
             echo '```'
-            grep -nE "error •" analyze.txt | head -n 300 || true
-            echo "--- tail ---"
-            tail -n 60 analyze.txt
+            tail -n 200 analyze.txt
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
           exit $code
@@ -82,22 +120,33 @@ jobs:
           set +e
           flutter test --no-pub --reporter expanded 2>&1 | tee test.txt
           code=${PIPESTATUS[0]}
-          # Surface each failing test as an annotation too (see Analyze step).
-          python3 - <<'PYEOF'
-          import re
-          for raw in open('test.txt', encoding='utf-8', errors='replace'):
-              line = raw.strip()
-              if not re.search(r'\[E\]|Some tests failed|Failed to load', line):
-                  continue
-              msg = line.replace('%', '%25').replace('\r', ' ').replace('\n', ' ').replace(':', '%3A').replace(',', '%2C')
-              print(f'::error::{msg[:400]}')
+          TEST_EXIT=$code python3 - <<'PYEOF'
+          import os, re
+
+          code = os.environ.get('TEST_EXIT', '0')
+          lines = open('test.txt', encoding='utf-8', errors='replace').read().split('\n')
+
+          def esc(text):
+              return (text.replace('%', '%25').replace('\r', ' ')
+                          .replace('\n', ' ').replace(':', '%3A').replace(',', '%2C'))
+
+          interesting = re.compile(
+              r'\[E\]|Some tests failed|Failed to load|Expected:|Actual:|'
+              r'Which:|^\s*\d+:\d+\s+|Test failed|Exception|Error:'
+          )
+          hits = [l.strip() for l in lines if l.strip() and interesting.search(l)]
+          for line in hits[:200]:
+              print(f'::error::{esc(line[:400])}')
+          if code != '0' and not hits:
+              print('::error::flutter test failed but no known pattern matched; raw tail below')
+              for raw in lines[-80:]:
+                  if raw.strip():
+                      print(f'::error::{esc(raw.strip()[:400])}')
           PYEOF
           {
             echo "## flutter test (exit $code)"
             echo '```'
-            grep -nE "Expected:|Actual:|\[E\]|Some tests failed|Failed to load" test.txt | head -n 200 || true
-            echo "--- tail ---"
-            tail -n 150 test.txt
+            tail -n 200 test.txt
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
           exit $code
