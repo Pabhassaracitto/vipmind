@@ -105,8 +105,13 @@ class MindmapModel {
       );
     }
 
-    // Recursively remove children
-    for (final childId in node.childrenIds) {
+    // Recursively remove children.
+    //
+    // Iterate a COPY: removeNode(childId) removes childId from THIS node's
+    // `childrenIds` (the child's parentId points back here), so iterating the
+    // live list threw ConcurrentModificationError. Deleting any node that had
+    // children crashed — the editor's delete button calls this.
+    for (final childId in List<String>.from(node.childrenIds)) {
       removeNode(childId);
     }
 

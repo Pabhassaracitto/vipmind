@@ -31,22 +31,32 @@ void main() {
       final fromTimestamp = firestoreDate(Timestamp.fromDate(date));
       // Printed on purpose: this assertion failed twice with the reason missing
       // from the report, so the inputs are part of the output now.
-      debugPrint('DATES: in=${date.toIso8601String()} '
-          'ts=${Timestamp.fromDate(date)} '
-          'tsToDate=${Timestamp.fromDate(date).toDate().toIso8601String()} '
-          'out=${fromTimestamp?.toIso8601String()} '
-          'iso=${firestoreDate(date.toIso8601String())?.toIso8601String()} '
-          'millis=${firestoreDate(date.millisecondsSinceEpoch)?.toIso8601String()} '
-          'notADate=${firestoreDate('not a date')} empty=${firestoreDate('')}');
-      expect(fromTimestamp, isNotNull);
-      expect(fromTimestamp!.millisecondsSinceEpoch, date.millisecondsSinceEpoch);
-      expect(firestoreDate(date.toIso8601String()), date);
-      expect(firestoreDate(date.millisecondsSinceEpoch), date);
-      expect(firestoreDate(null), isNull);
-      expect(firestoreDate(''), isNull);
-      expect(firestoreDate('not a date'), isNull);
-      expect(firestoreDateOr('not a date', date), date);
-      expect(firestoreDateOr(null, date), date);
+      final fromIso = firestoreDate(date.toIso8601String());
+      final fromMillis = firestoreDate(date.millisecondsSinceEpoch);
+      final orInvalid = firestoreDateOr('not a date', date);
+      final orNull = firestoreDateOr(null, date);
+      debugPrint('DATES2: ts=${fromTimestamp?.toIso8601String()} '
+          'tsMs=${fromTimestamp?.millisecondsSinceEpoch} '
+          'wantMs=${date.millisecondsSinceEpoch} '
+          'iso=${fromIso?.toIso8601String()} '
+          'millis=${fromMillis?.toIso8601String()} '
+          'orInvalid=${orInvalid.toIso8601String()} '
+          'orNull=${orNull.toIso8601String()} '
+          'notADate=${firestoreDate('not a date')} '
+          'empty=${firestoreDate('')} '
+          'null=${firestoreDate(null)}');
+      // Each assertion names its input, so a failure says which conversion is
+      // wrong instead of only "dates accept Timestamp, ISO string, millis".
+      expect(fromTimestamp, isNotNull, reason: 'Timestamp -> DateTime');
+      expect(fromTimestamp!.millisecondsSinceEpoch, date.millisecondsSinceEpoch,
+          reason: 'Timestamp -> same instant');
+      expect(fromIso, date, reason: 'ISO-8601 string');
+      expect(fromMillis, date, reason: 'milliseconds since epoch');
+      expect(firestoreDate(null), isNull, reason: 'null');
+      expect(firestoreDate(''), isNull, reason: 'empty string');
+      expect(firestoreDate('not a date'), isNull, reason: 'unparseable string');
+      expect(orInvalid, date, reason: 'fallback on unparseable string');
+      expect(orNull, date, reason: 'fallback on null');
     });
 
     test('numbers accept int where a double is expected (and back)', () {

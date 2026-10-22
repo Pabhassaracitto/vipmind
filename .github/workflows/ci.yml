@@ -236,12 +236,12 @@ jobs:
               if '[E]' in l and not l.strip().startswith('00:'):
                   context.append(l.strip()[:220])
               elif '[E]' in l:
-                  window = [x.strip() for x in test[max(0, i - 30):i]
-                            if x.strip() and (x.startswith(('ZEN ', 'DATES:', 'REMOVENODE')) or
-                                              x.startswith('Expected') or
-                                              x.startswith('  Actual') or
-                                              'debugPrint' in x)]
-                  context.extend(w[-6:] for w in [window] if w)
+                  # The expanded reporter prints the failure reason BEFORE the
+                  # "[E]" line, so keep the preceding lines verbatim. Without
+                  # this, three failures arrived with no reason at all.
+                  window = [x.strip()[:220] for x in test[max(0, i - 14):i]
+                            if x.strip()]
+                  context.append('\n'.join(window[-12:]))
 
           lines.append('#### flutter test \u2014 ' + (counts or 'summary line not found'))
           lines.append('')
@@ -252,13 +252,11 @@ jobs:
                   lines.append('- `' + name + '`')
               lines.append('')
           if context:
-              flat = [c for item in context for c in (item if isinstance(item, list) else [item])]
-              if flat:
-                  lines.append('#### Diagnostics printed by the tests')
-                  lines.append('```')
-                  lines.extend(flat[:60])
-                  lines.append('```')
-                  lines.append('')
+              lines.append('#### Context before each [E] marker')
+              lines.append('```')
+              lines.extend(context[:40])
+              lines.append('```')
+              lines.append('')
           if blocks:
               lines.append('#### Exception detail (' + str(len(blocks)) + ' blocks)')
               lines.append('```')
