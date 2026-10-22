@@ -170,10 +170,11 @@ void main() {
       }
     });
 
-    test('a leaf sibling and a subtree sibling get a consistent gap', () {
-      // Regression: the old in-provider version advanced the cursor with
-      // `subtreeHeight + spacing`, which produced a different gap depending on
-      // whether the previous sibling had children.
+    test('a leaf sibling and a subtree sibling get the same gap', () {
+      // Regression, and the reason `_layoutChildrenAsTree` must return a bottom
+      // EDGE in both branches: an earlier version added treeVerticalSpacing
+      // inside the leaf branch only, which produced a 160px gap after a leaf
+      // sibling and a 110px gap after a subtree sibling.
       final withSubtree = _tree();
       MindmapLayoutEngine.apply(MindmapLayout.tree, withSubtree, 'root');
       final gapAfterSubtree =
@@ -184,8 +185,13 @@ void main() {
       MindmapLayoutEngine.apply(MindmapLayout.tree, flat, 'root');
       final gapAfterLeaf = flat['b']!.position.dy - flat['a']!.position.dy;
 
-      expect(gapAfterSubtree, greaterThan(gapAfterLeaf));
-      expect(gapAfterLeaf, closeTo(MindmapLayoutEngine.treeVerticalSpacing, 0.001));
+      final leafBottom = flat['a']!.position.dy + flat['a']!.size.height;
+
+      expect(gapAfterLeaf, closeTo(gapAfterSubtree, 0.001),
+          reason: 'the gap must not depend on whether the sibling has children');
+      expect(gapAfterLeaf - leafBottom,
+          closeTo(MindmapLayoutEngine.treeVerticalSpacing, 0.001),
+          reason: 'the gap is node height + the configured spacing');
     });
   });
 

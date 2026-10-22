@@ -151,12 +151,14 @@ class MindmapLayoutEngine {
     );
   }
 
-  /// Lays out the subtree of [parentId] and returns the Y at which the NEXT
-  /// sibling of that subtree may be placed — i.e. the subtree's bottom edge plus
-  /// [treeVerticalSpacing], or just the node's own bottom edge for a leaf.
+  /// Lays out the subtree of [parentId] and returns the BOTTOM EDGE (in Y) of
+  /// everything it placed. The caller adds [treeVerticalSpacing] before placing
+  /// the next sibling.
   ///
-  /// Returning the cursor (rather than a bare bottom edge) is what makes the gap
-  /// between two siblings independent of whether the first one has children.
+  /// Both branches must return the same kind of value. An earlier version added
+  /// the spacing inside the leaf branch only, which made the gap after a leaf
+  /// sibling 160px and the gap after a subtree sibling 110px — the exact
+  /// inconsistency this extraction was meant to remove.
   static double _layoutChildrenAsTree(
     Map<String, NodeModel> nodes,
     String parentId,
@@ -165,11 +167,12 @@ class MindmapLayoutEngine {
   ) {
     final parent = nodes[parentId];
     if (parent == null) return startY;
-    if (parent.childrenIds.isEmpty) {
-      return startY + parent.size.height + treeVerticalSpacing;
-    }
+
+    // A leaf occupies its own box and nothing below it.
+    if (parent.childrenIds.isEmpty) return startY + parent.size.height;
 
     var currentY = startY;
+    var bottom = startY;
 
     for (final childId in parent.childrenIds) {
       final child = nodes[childId];
@@ -177,15 +180,16 @@ class MindmapLayoutEngine {
 
       nodes[childId] = child.copyWith(position: Offset(startX, currentY));
 
-      currentY = _layoutChildrenAsTree(
+      bottom = _layoutChildrenAsTree(
         nodes,
         childId,
         startX + treeHorizontalSpacing,
         currentY,
       );
+      currentY = bottom + treeVerticalSpacing;
     }
 
-    return currentY;
+    return bottom;
   }
 
   // ------------------------------------------------------------- org chart
