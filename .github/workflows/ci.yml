@@ -46,11 +46,27 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      # `flutter analyze` prints "error • msg • path:line:col • rule", which
+      # GitHub cannot turn into annotations on its own. Re-emitting them as
+      # `::error file=...,line=...` makes every failure readable from
+      # `GET /check-runs/{id}/annotations` — the raw job log lives on a blob
+      # host that tooling frequently cannot reach.
       - name: Analyze (blocking)
         run: |
           set +e
           flutter analyze --no-pub 2>&1 | tee analyze.txt
           code=${PIPESTATUS[0]}
+          python3 - <<'PYEOF'
+          import re
+          for raw in open('analyze.txt', encoding='utf-8', errors='replace'):
+              line = raw.rstrip()
+              m = re.search(r'\b(error|warning|info)\s*\u2022\s*(.*?)\s*\u2022\s*([^:\s]+):(\d+):(\d+)\s*\u2022\s*([\w-]+)\s*$', line)
+              if not m:
+                  continue
+              level, msg, path, ln, col, rule = m.groups()
+              msg = msg.replace('%', '%25').replace('\r', ' ').replace('\n', ' ').replace(':', '%3A').replace(',', '%2C')
+              print(f'::{level} file={path},line={ln},col={col}::{rule}: {msg}')
+          PYEOF
           {
             echo "## flutter analyze (exit $code)"
             echo '```'
@@ -66,12 +82,22 @@ jobs:
           set +e
           flutter test --no-pub --reporter expanded 2>&1 | tee test.txt
           code=${PIPESTATUS[0]}
+          # Surface each failing test as an annotation too (see Analyze step).
+          python3 - <<'PYEOF'
+          import re
+          for raw in open('test.txt', encoding='utf-8', errors='replace'):
+              line = raw.strip()
+              if not re.search(r'\[E\]|Some tests failed|Failed to load', line):
+                  continue
+              msg = line.replace('%', '%25').replace('\r', ' ').replace('\n', ' ').replace(':', '%3A').replace(',', '%2C')
+              print(f'::error::{msg[:400]}')
+          PYEOF
           {
             echo "## flutter test (exit $code)"
             echo '```'
-            grep -nE "^\s*\d+:\d+|Expected:|Actual:|failed|FAILED|Error:" test.txt | head -n 200 || true
+            grep -nE "Expected:|Actual:|\[E\]|Some tests failed|Failed to load" test.txt | head -n 200 || true
             echo "--- tail ---"
-            tail -n 120 test.txt
+            tail -n 150 test.txt
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
           exit $code
