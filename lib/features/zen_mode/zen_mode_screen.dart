@@ -107,6 +107,9 @@ class _ZenModeScreenState extends State<ZenModeScreen> {
       _ideaController.clear();
     });
     await StorageService.setStringList(_storageKeyIdeas, _ideas);
+    // The await above is a real gap: the widget can be gone by the time the
+    // write finishes, and using `context` after that is undefined behaviour.
+    if (!mounted) return;
     context.read<AudioProvider>().playClickIfEnabled();
   }
 

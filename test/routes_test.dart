@@ -222,7 +222,7 @@ void main() {
     });
 
     testWidgets('unknown route screen offers a way home', (tester) async {
-      await tester.pumpWidget(MaterialApp(
+      await tester.pumpWidget(const MaterialApp(
         onGenerateRoute: AppRoutes.generateRoute,
         initialRoute: '/nope',
       ));
