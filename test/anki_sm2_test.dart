@@ -101,7 +101,15 @@ void main() {
       expect(restored.interval, c.interval);
       expect(restored.repetitions, c.repetitions);
       expect(restored.easeFactor, closeTo(c.easeFactor, 0.0001));
-      expect(restored.nextReview, c.nextReview);
+      // `review()` builds nextReview from DateTime.now() (local), and
+      // firestoreDate() normalises everything it reads back to UTC — correct for
+      // Firestore, but it means the two DateTimes are the same INSTANT in
+      // different zones. Compare instants, not zone flags.
+      expect(restored.nextReview, isNotNull);
+      expect(restored.nextReview!.millisecondsSinceEpoch,
+          c.nextReview!.millisecondsSinceEpoch);
+      expect(restored.nextReview!.isUtc, isTrue,
+          reason: 'dates read back from JSON/Firestore are UTC');
     });
   });
 }

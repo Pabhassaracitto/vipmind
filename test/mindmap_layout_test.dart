@@ -171,10 +171,10 @@ void main() {
     });
 
     test('a leaf sibling and a subtree sibling get the same gap', () {
-      // Regression, and the reason `_layoutChildrenAsTree` must return a bottom
+      // Regression test for `_layoutChildrenAsTree`, which must return a bottom
       // EDGE in both branches: an earlier version added treeVerticalSpacing
-      // inside the leaf branch only, which produced a 160px gap after a leaf
-      // sibling and a 110px gap after a subtree sibling.
+      // inside the leaf branch only, so the gap after a leaf sibling differed
+      // from the gap after a subtree sibling and the tree looked ragged.
       final withSubtree = _tree();
       MindmapLayoutEngine.apply(MindmapLayout.tree, withSubtree, 'root');
       final gapAfterSubtree =
@@ -187,29 +187,21 @@ void main() {
 
       final leafBottom = flat['a']!.position.dy + flat['a']!.size.height;
 
-      // Printed because two attempts at this assertion failed with numbers that
-      // did not match either version of the engine; the geometry is cheap to log
-      // and ends the guessing.
-      String dump(Map<String, NodeModel> nodes, List<String> ids) => ids
-          .map((id) => '$id=${nodes[id]?.position.dy}(${nodes[id]?.size.height})')
-          .join(' ');
-      debugPrint('TREEGAP subtree: ${dump(withSubtree, const [
-        'root',
-        'a',
-        'a1',
-        'b',
-        'c'
-      ])}');
-      debugPrint('TREEGAP flat: ${dump(flat, const ['root', 'a', 'b', 'c'])} '
-          '| gapSubtree=$gapAfterSubtree gapLeaf=$gapAfterLeaf '
-          'leafBottom=$leafBottom '
-          'spacing=${MindmapLayoutEngine.treeVerticalSpacing}');
-
       expect(gapAfterLeaf, closeTo(gapAfterSubtree, 0.001),
           reason: 'the gap must not depend on whether the sibling has children');
-      expect(gapAfterLeaf - leafBottom,
+
+      // Clearance is measured to the next sibling's TOP, not "gap minus the
+      // node's own bottom": subtracting leafBottom from the gap removes a.dy
+      // twice. With a leaf sibling the clearance is exactly
+      // treeVerticalSpacing; with a subtree sibling it is smaller by the depth
+      // of that subtree, but never negative — which is what the
+      // "siblings never overlap vertically" test above pins.
+      final nextSiblingTop = flat['b']!.position.dy;
+      expect(nextSiblingTop - leafBottom,
           closeTo(MindmapLayoutEngine.treeVerticalSpacing, 0.001),
-          reason: 'the gap is node height + the configured spacing');
+          reason: 'clearance below a leaf sibling is the configured spacing');
+      expect(nextSiblingTop, greaterThan(leafBottom),
+          reason: 'siblings must not overlap');
     });
   });
 
