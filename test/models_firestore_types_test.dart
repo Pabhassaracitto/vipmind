@@ -35,16 +35,6 @@ void main() {
       final fromMillis = firestoreDate(date.millisecondsSinceEpoch);
       final orInvalid = firestoreDateOr('not a date', date);
       final orNull = firestoreDateOr(null, date);
-      debugPrint('DATES2: ts=${fromTimestamp?.toIso8601String()} '
-          'tsMs=${fromTimestamp?.millisecondsSinceEpoch} '
-          'wantMs=${date.millisecondsSinceEpoch} '
-          'iso=${fromIso?.toIso8601String()} '
-          'millis=${fromMillis?.toIso8601String()} '
-          'orInvalid=${orInvalid.toIso8601String()} '
-          'orNull=${orNull.toIso8601String()} '
-          'notADate=${firestoreDate('not a date')} '
-          'empty=${firestoreDate('')} '
-          'null=${firestoreDate(null)}');
       // Each assertion names its input, so a failure says which conversion is
       // wrong instead of only "dates accept Timestamp, ISO string, millis".
       expect(fromTimestamp, isNotNull, reason: 'Timestamp -> DateTime');
@@ -52,6 +42,11 @@ void main() {
           reason: 'Timestamp -> same instant');
       expect(fromIso, date, reason: 'ISO-8601 string');
       expect(fromMillis, date, reason: 'milliseconds since epoch');
+      // Epoch milliseconds carry no zone, so the converter must choose UTC:
+      // a local DateTime for the same instant compares unequal to a UTC one.
+      expect(fromMillis!.isUtc, isTrue, reason: 'millis -> UTC');
+      expect(fromTimestamp.isUtc, isTrue, reason: 'Timestamp -> UTC');
+      expect(fromIso!.isUtc, isTrue, reason: 'ISO-8601 with Z -> UTC');
       expect(firestoreDate(null), isNull, reason: 'null');
       expect(firestoreDate(''), isNull, reason: 'empty string');
       expect(firestoreDate('not a date'), isNull, reason: 'unparseable string');
@@ -304,17 +299,7 @@ void main() {
 
       expect(map.nodes, hasLength(3));
 
-      // Printed on purpose: this test failed twice with no reason captured in
-      // the CI report.
-      debugPrint('REMOVENODE before: keys=${map.nodes.keys.toList()} '
-          'rootChildren=${map.nodes[rootId]?.childrenIds} '
-          'connections=${map.connections.length}');
-
       map.removeNode('child');
-
-      debugPrint('REMOVENODE after: keys=${map.nodes.keys.toList()} '
-          'rootChildren=${map.nodes[rootId]?.childrenIds} '
-          'connections=${map.connections.length}');
 
       // Map key order is an implementation detail, not a contract.
       expect(map.nodes, hasLength(1));

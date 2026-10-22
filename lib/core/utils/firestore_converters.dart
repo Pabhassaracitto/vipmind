@@ -26,10 +26,13 @@ DateTime? firestoreDate(Object? value) {
     return DateTime.tryParse(value);
   }
   if (value is int) {
-    return DateTime.fromMillisecondsSinceEpoch(value);
+    // UTC, because epoch milliseconds carry no zone. Returning a local DateTime
+    // here made `firestoreDate(millis) == utcDate` false for every runner that
+    // is not already on UTC — the same instant, a different zone flag.
+    return DateTime.fromMillisecondsSinceEpoch(value, isUtc: true);
   }
   if (value is double) {
-    return DateTime.fromMillisecondsSinceEpoch(value.round());
+    return DateTime.fromMillisecondsSinceEpoch(value.round(), isUtc: true);
   }
   return null;
 }
