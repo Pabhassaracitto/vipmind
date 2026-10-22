@@ -162,8 +162,21 @@ void main() {
 
       expect(find.text('Zen Mode'), findsOneWidget);
       expect(find.text('25:00'), findsOneWidget);
-      expect(find.text('Start'), findsOneWidget);
+      // Assert the timer state through its icon rather than the button label:
+      // the label is a three-way ternary and this way a regression says which
+      // state was wrong instead of just "text not found".
+      expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget,
+          reason: 'timer should be idle, offering to start');
+      expect(find.byIcon(Icons.pause_rounded), findsNothing);
       expect(find.text('Nothing captured yet'), findsOneWidget);
+
+      // Diagnostic: if anything above fails, this lands in the CI report and
+      // shows exactly which strings the screen produced.
+      debugPrint('ZEN TEXTS: ' +
+          tester
+              .widgetList<Text>(find.byType(Text))
+              .map((t) => t.data ?? '<rich>')
+              .join(' | '));
     });
 
     testWidgets('zen mode keeps a captured thought on screen', (tester) async {
