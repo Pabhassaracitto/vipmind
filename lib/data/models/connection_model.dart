@@ -58,7 +58,7 @@ class ConnectionModel {
       'id': id,
       'fromNodeId': fromNodeId,
       'toNodeId': toNodeId,
-      'color': color.value,
+      'color': color.toARGB32(),
       'strokeWidth': strokeWidth,
       'style': style.index,
       'type': type.index,
