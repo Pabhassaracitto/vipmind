@@ -25,8 +25,11 @@ void main() {
     test('dates accept Timestamp, ISO string, millis and null', () {
       final date = DateTime.utc(2026, 10, 22, 8, 30);
 
-      // Timestamp.toDate() returns a LOCAL DateTime for the same instant.
-      expect(firestoreDate(Timestamp.fromDate(date))!.toUtc(), date);
+      // Compare the instant, not the zone flag: Timestamp.toDate() hands back a
+      // DateTime in the local zone for the same moment, and DateTime equality in
+      // Dart is zone-sensitive.
+      expect(firestoreDate(Timestamp.fromDate(date))!.millisecondsSinceEpoch,
+          date.millisecondsSinceEpoch);
       expect(firestoreDate(date.toIso8601String()), date);
       expect(firestoreDate(date.millisecondsSinceEpoch), date);
       expect(firestoreDate(null), isNull);
@@ -147,11 +150,14 @@ void main() {
       expect(node.shape, NodeShape.rectangle);
       expect(node.type, NodeType.note);
       expect(node.childrenIds, ['a', 'b']);
-      expect(node.createdAt.toUtc(), DateTime.utc(2026, 1, 28));
-      expect(node.updatedAt.toUtc(), DateTime.utc(2026, 10, 22));
+      expect(node.createdAt.millisecondsSinceEpoch,
+          DateTime.utc(2026, 1, 28).millisecondsSinceEpoch);
+      expect(node.updatedAt.millisecondsSinceEpoch,
+          DateTime.utc(2026, 10, 22).millisecondsSinceEpoch);
       expect(node.audioNote, isNotNull);
       expect(node.audioNote!.duration, const Duration(milliseconds: 1500));
-      expect(node.audioNote!.createdAt.toUtc(), DateTime.utc(2026, 5, 5));
+      expect(node.audioNote!.createdAt.millisecondsSinceEpoch,
+          DateTime.utc(2026, 5, 5).millisecondsSinceEpoch);
     });
 
     test('toJson output is JSON-encodable (Firestore requirement)', () {
@@ -204,8 +210,10 @@ void main() {
       });
 
       expect(map.title, 'Saved map');
-      expect(map.createdAt.toUtc(), DateTime.utc(2026, 2, 1));
-      expect(map.updatedAt.toUtc(), DateTime.utc(2026, 2, 2));
+      expect(map.createdAt.millisecondsSinceEpoch,
+          DateTime.utc(2026, 2, 1).millisecondsSinceEpoch);
+      expect(map.updatedAt.millisecondsSinceEpoch,
+          DateTime.utc(2026, 2, 2).millisecondsSinceEpoch);
       expect(map.layout, MindmapLayout.orgChart);
       expect(map.style, MindmapStyle.colorful);
       expect(map.isFavorite, isTrue);
@@ -278,7 +286,9 @@ void main() {
 
       map.removeNode('child');
 
-      expect(map.nodes.keys, [rootId]);
+      // Map key order is an implementation detail, not a contract.
+      expect(map.nodes, hasLength(1));
+      expect(map.nodes.containsKey(rootId), isTrue);
       expect(map.connections, isEmpty);
       expect(map.nodes[rootId]!.childrenIds, isEmpty);
     });
@@ -322,7 +332,8 @@ void main() {
 
       expect(user.stats['maps'], 4);
       expect(user.stats['nodes'], 120);
-      expect(user.createdAt.toUtc(), DateTime.utc(2026, 3, 3));
+      expect(user.createdAt.millisecondsSinceEpoch,
+          DateTime.utc(2026, 3, 3).millisecondsSinceEpoch);
       expect(user.settings, isEmpty);
     });
 
