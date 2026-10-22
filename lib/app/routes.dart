@@ -40,75 +40,83 @@ class AppRoutes {
   static const String ankiDeck = '/anki';
   static const String flashcardReview = '/anki/review';
   static const String zenMode = '/zen-mode';
-  static const String settings = '/settings';
+  /// Named `settingsRoute`, not `settings`: inside `generateRoute` a case
+  /// label written `settings` would be a *variable pattern* in Dart 3 — it
+  /// binds instead of comparing, so it would swallow every remaining route.
+  static const String settingsRoute = '/settings';
 
-  static Route<dynamic> generateRoute(RouteSettings settings) {
-    switch (settings.name) {
+  // The parameter is NOT called `settings`: a switch case like
+  // `case settings:` would bind a *variable* pattern (Dart 3) and silently
+  // match everything, and `case AppRoutes.settings:` is rejected because a
+  // constant pattern may not be a prefixed identifier. With the parameter
+  // renamed, every case below is a plain constant pattern.
+  static Route<dynamic> generateRoute(RouteSettings routeSettings) {
+    switch (routeSettings.name) {
       case splash:
-        return _buildRoute(const SplashScreen(), settings);
+        return _buildRoute(const SplashScreen(), routeSettings);
 
       case login:
-        return _buildRoute(const LoginScreen(), settings);
+        return _buildRoute(const LoginScreen(), routeSettings);
 
       case register:
-        return _buildRoute(const RegisterScreen(), settings);
+        return _buildRoute(const RegisterScreen(), routeSettings);
 
       case home:
-        return _buildRoute(const HomeScreen(), settings);
+        return _buildRoute(const HomeScreen(), routeSettings);
 
       case mindmapEditor:
         return _buildRoute(
-          MindmapEditorScreen(mindmapId: _arg<String>(settings, 'mindmapId')),
-          settings,
+          MindmapEditorScreen(mindmapId: _arg<String>(routeSettings, 'mindmapId')),
+          routeSettings,
         );
 
       case mindmapPreview:
         return _buildRoute(
           MindmapPreviewScreen(
-            mindmapId: _requiredArg(settings, 'mindmapId'),
+            mindmapId: _requiredArg(routeSettings, 'mindmapId'),
           ),
-          settings,
+          routeSettings,
         );
 
       case textToMindmap:
-        return _buildRoute(const TextToMindmapScreen(), settings);
+        return _buildRoute(const TextToMindmapScreen(), routeSettings);
 
       case voiceToMindmap:
-        return _buildRoute(const VoiceToMindmapScreen(), settings);
+        return _buildRoute(const VoiceToMindmapScreen(), routeSettings);
 
       case imageToMindmap:
-        return _buildRoute(const ImageToMindmapScreen(), settings);
+        return _buildRoute(const ImageToMindmapScreen(), routeSettings);
 
       case templateGallery:
-        return _buildRoute(const TemplateGalleryScreen(), settings);
+        return _buildRoute(const TemplateGalleryScreen(), routeSettings);
 
       case presentation:
         return _buildRoute(
           PresentationScreen(
-            mindmapId: _requiredArg(settings, 'mindmapId'),
+            mindmapId: _requiredArg(routeSettings, 'mindmapId'),
           ),
-          settings,
+          routeSettings,
         );
 
       case ankiDeck:
-        return _buildRoute(const AnkiDeckScreen(), settings);
+        return _buildRoute(const AnkiDeckScreen(), routeSettings);
 
       case flashcardReview:
         return _buildRoute(
           FlashcardReviewScreen(
-            deckId: _requiredArg(settings, 'deckId'),
+            deckId: _requiredArg(routeSettings, 'deckId'),
           ),
-          settings,
+          routeSettings,
         );
 
       case zenMode:
-        return _buildRoute(const ZenModeScreen(), settings);
+        return _buildRoute(const ZenModeScreen(), routeSettings);
 
-      case settings:
-        return _buildRoute(const SettingsScreen(), settings);
+      case settingsRoute:
+        return _buildRoute(const SettingsScreen(), routeSettings);
 
       default:
-        return _buildRoute(UnknownRouteScreen(routeName: settings.name), settings);
+        return _buildRoute(UnknownRouteScreen(routeName: routeSettings.name), routeSettings);
     }
   }
 

@@ -107,7 +107,7 @@ class HomeDrawer extends StatelessWidget {
                   label: 'Settings',
                   onTap: () {
                     Navigator.pop(context);
-                    Navigator.pushNamed(context, AppRoutes.settings);
+                    Navigator.pushNamed(context, AppRoutes.settingsRoute);
                   },
                 ),
                 _DrawerItem(

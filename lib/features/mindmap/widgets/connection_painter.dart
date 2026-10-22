@@ -148,7 +148,6 @@ class ConnectionPainter extends CustomPainter {
     final midY = (from.dy + to.dy) / 2;
 
     final distance = (to - from).distance;
-    final curvature = distance * 0.2;
 
     // Determine curve direction based on relative positions
     final dx = to.dx - from.dx;
