@@ -30,6 +30,10 @@ class _ZenModeScreenState extends State<ZenModeScreen> {
   int _remainingSeconds = 0;
   int _totalSeconds = 0;
   bool _isRunning = false;
+
+  /// False until the first Start. Without it a fresh session offered "Resume"
+  /// (there is time left on the clock but nothing has run yet).
+  bool _hasStarted = false;
   bool _isFullscreen = false;
 
   @override
@@ -70,7 +74,10 @@ class _ZenModeScreenState extends State<ZenModeScreen> {
       setState(() => _remainingSeconds = _totalSeconds);
     }
 
-    setState(() => _isRunning = true);
+    setState(() {
+      _isRunning = true;
+      _hasStarted = true;
+    });
     _ticker = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
@@ -173,7 +180,7 @@ class _ZenModeScreenState extends State<ZenModeScreen> {
                 color: AppColors.calmGreen,
               ),
               label: Text(
-                _isRunning ? 'Pause' : (_remainingSeconds == 0 ? 'Start' : 'Resume'),
+                _isRunning ? 'Pause' : (_hasStarted ? 'Resume' : 'Start'),
                 style: const TextStyle(color: AppColors.calmGreen),
               ),
             ),
