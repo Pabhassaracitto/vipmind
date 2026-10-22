@@ -122,8 +122,14 @@ void main() {
   });
 
   group('Firebase-free screens actually render', () {
-    /// Pumps the real route table with the real providers, the way `main()`
-    /// does, then navigates to [name].
+    /// Pumps the real route table with the real providers, then navigates.
+    ///
+    /// It does NOT use `MaterialApp(initialRoute: ...)`: Flutter splits a deep
+    /// initial route into segments and builds the route for `/` as well, which
+    /// here is SplashScreen — and its 3-second navigation timer then fails every
+    /// test with "A Timer is still pending even after the widget tree was
+    /// disposed". Navigating with pushNamed after the first frame builds only the
+    /// screen under test.
     Future<void> pumpRoute(WidgetTester tester, String name) async {
       final themeProvider = ThemeProvider();
       final audioProvider = AudioProvider();
@@ -139,10 +145,14 @@ void main() {
           ],
           child: MaterialApp(
             onGenerateRoute: AppRoutes.generateRoute,
-            initialRoute: name,
+            home: const Scaffold(body: Text('test-host')),
           ),
         ),
       );
+
+      final navigator =
+          tester.state<NavigatorState>(find.byType(Navigator));
+      navigator.pushNamed(name);
       await tester.pumpAndSettle(const Duration(milliseconds: 400));
     }
 
@@ -222,10 +232,13 @@ void main() {
     });
 
     testWidgets('unknown route screen offers a way home', (tester) async {
-      await tester.pumpWidget(const MaterialApp(
+      await tester.pumpWidget(MaterialApp(
         onGenerateRoute: AppRoutes.generateRoute,
-        initialRoute: '/nope',
+        home: const Scaffold(body: Text('test-host')),
       ));
+      // pushNamed, not initialRoute: a deep initialRoute also builds '/' (the
+      // SplashScreen) and leaves its navigation timer pending.
+      tester.state<NavigatorState>(find.byType(Navigator)).pushNamed('/nope');
       await tester.pumpAndSettle(const Duration(milliseconds: 400));
 
       expect(find.text('Page not found'), findsOneWidget);
