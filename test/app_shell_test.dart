@@ -30,10 +30,30 @@ void main() {
   });
 
   group('local Inter font (no runtime font download)', () {
-    test('textTheme applies the bundled family', () {
+    test('textTheme fills EVERY slot with the bundled family', () {
       final theme = AppFonts.textTheme();
-      expect(theme.bodyMedium?.fontFamily, AppFonts.family);
-      expect(theme.displayLarge?.fontFamily, AppFonts.family);
+      final styles = <String, TextStyle?>{
+        'displayLarge': theme.displayLarge,
+        'displayMedium': theme.displayMedium,
+        'displaySmall': theme.displaySmall,
+        'headlineLarge': theme.headlineLarge,
+        'headlineMedium': theme.headlineMedium,
+        'headlineSmall': theme.headlineSmall,
+        'titleLarge': theme.titleLarge,
+        'titleMedium': theme.titleMedium,
+        'titleSmall': theme.titleSmall,
+        'bodyLarge': theme.bodyLarge,
+        'bodyMedium': theme.bodyMedium,
+        'bodySmall': theme.bodySmall,
+        'labelLarge': theme.labelLarge,
+        'labelMedium': theme.labelMedium,
+        'labelSmall': theme.labelSmall,
+      };
+      styles.forEach((name, style) {
+        expect(style, isNotNull, reason: '$name is null — TextTheme.apply() '
+            'skips null slots, which is why the family must be set explicitly');
+        expect(style!.fontFamily, AppFonts.family, reason: name);
+      });
     });
 
     test('inter() mirrors the TextStyle parameters it is given', () {
@@ -136,14 +156,20 @@ void main() {
         providers: [
           ChangeNotifierProvider<ThemeProvider>.value(value: themeProvider),
         ],
-        child: MaterialApp(
-          title: 'VipMind',
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: themeProvider.themeMode,
-          onGenerateRoute: AppRoutes.generateRoute,
-          home: Builder(
-            builder: (context) => const Scaffold(body: Text('probe')),
+        // Mirrors VipMindApp: the MaterialApp must be rebuilt by a Consumer,
+        // otherwise a theme change never reaches it. (A plain MaterialApp that
+        // reads themeProvider.themeMode once at construction keeps the old
+        // brightness forever — which is exactly what this test catches.)
+        child: Consumer<ThemeProvider>(
+          builder: (context, provider, _) => MaterialApp(
+            title: 'VipMind',
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: provider.themeMode,
+            onGenerateRoute: AppRoutes.generateRoute,
+            home: Builder(
+              builder: (context) => const Scaffold(body: Text('probe')),
+            ),
           ),
         ),
       ),

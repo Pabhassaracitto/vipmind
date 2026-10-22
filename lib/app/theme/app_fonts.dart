@@ -37,30 +37,36 @@ class AppFonts {
 
   /// Drop-in replacement for `GoogleFonts.interTextTheme()`.
   ///
-  /// `TextTheme().apply(fontFamily:)` would silently do nothing: `apply` only
-  /// rewrites styles that already exist, and a default-constructed TextTheme is
-  /// full of nulls (ThemeData then fills the gaps from the platform typography,
-  /// i.e. Roboto). So the family is set on every slot explicitly.
+  /// Two traps this avoids:
+  /// * `TextTheme().apply(fontFamily:)` silently does nothing — `apply` only
+  ///   rewrites styles that already exist, and a default-constructed TextTheme
+  ///   is full of nulls (ThemeData then fills the gaps from the platform
+  ///   typography, i.e. Roboto);
+  /// * a TextTheme with *some* null slots loses the family for those slots when
+  ///   it is merged, so every one of the 15 slots is filled — from [base] when
+  ///   given, otherwise from the Material defaults.
   static TextTheme textTheme([TextTheme? base]) {
-    final source = base ?? const TextTheme();
-    TextStyle? apply(TextStyle? style) => style?.copyWith(fontFamily: family);
+    final TextTheme source = base ?? ThemeData.light().textTheme;
+
+    TextStyle fill(TextStyle? style) =>
+        (style ?? const TextStyle()).copyWith(fontFamily: family);
 
     return TextTheme(
-      displayLarge: apply(source.displayLarge),
-      displayMedium: apply(source.displayMedium),
-      displaySmall: apply(source.displaySmall),
-      headlineLarge: apply(source.headlineLarge),
-      headlineMedium: apply(source.headlineMedium),
-      headlineSmall: apply(source.headlineSmall),
-      titleLarge: apply(source.titleLarge),
-      titleMedium: apply(source.titleMedium),
-      titleSmall: apply(source.titleSmall),
-      bodyLarge: apply(source.bodyLarge),
-      bodyMedium: apply(source.bodyMedium),
-      bodySmall: apply(source.bodySmall),
-      labelLarge: apply(source.labelLarge),
-      labelMedium: apply(source.labelMedium),
-      labelSmall: apply(source.labelSmall),
+      displayLarge: fill(source.displayLarge),
+      displayMedium: fill(source.displayMedium),
+      displaySmall: fill(source.displaySmall),
+      headlineLarge: fill(source.headlineLarge),
+      headlineMedium: fill(source.headlineMedium),
+      headlineSmall: fill(source.headlineSmall),
+      titleLarge: fill(source.titleLarge),
+      titleMedium: fill(source.titleMedium),
+      titleSmall: fill(source.titleSmall),
+      bodyLarge: fill(source.bodyLarge),
+      bodyMedium: fill(source.bodyMedium),
+      bodySmall: fill(source.bodySmall),
+      labelLarge: fill(source.labelLarge),
+      labelMedium: fill(source.labelMedium),
+      labelSmall: fill(source.labelSmall),
     );
   }
 }
