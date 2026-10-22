@@ -70,7 +70,7 @@ class _NodeEditorPanelState extends State<NodeEditorPanel> {
         color: Theme.of(context).scaffoldBackgroundColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 20,
             offset: const Offset(-5, 0),
           ),
@@ -88,7 +88,7 @@ class _NodeEditorPanelState extends State<NodeEditorPanel> {
             ),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [node.color, node.color.withOpacity(0.8)],
+                colors: [node.color, node.color.withValues(alpha: 0.8)],
               ),
             ),
             child: Row(
@@ -293,7 +293,7 @@ class _ColorPicker extends StatelessWidget {
                   isSelected ? Border.all(color: Colors.white, width: 3) : null,
               boxShadow: [
                 BoxShadow(
-                  color: color.withOpacity(isSelected ? 0.5 : 0.3),
+                  color: color.withValues(alpha: isSelected ? 0.5 : 0.3),
                   blurRadius: isSelected ? 12 : 6,
                   spreadRadius: isSelected ? 2 : 0,
                 ),
@@ -344,7 +344,7 @@ class _ShapePicker extends StatelessWidget {
               border: Border.all(
                 color: isSelected
                     ? AppColors.primaryBlue
-                    : AppColors.textSecondary.withOpacity(0.3),
+                    : AppColors.textSecondary.withValues(alpha: 0.3),
               ),
             ),
             child: Icon(
@@ -399,7 +399,7 @@ class _TypePicker extends StatelessWidget {
               color: isSelected ? info.color : Colors.transparent,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isSelected ? info.color : info.color.withOpacity(0.3),
+                color: isSelected ? info.color : info.color.withValues(alpha: 0.3),
               ),
             ),
             child: Row(

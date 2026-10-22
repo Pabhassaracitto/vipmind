@@ -1,62 +1,106 @@
-Repository-specific Copilot instructions for vipmind_new
+# Repository-specific instructions for AI coding agents — VipMind
 
-Purpose
-- Short: help an AI coding agent become productive quickly in this Flutter codebase.
+## Purpose
 
-Big picture (what to know first)
-- App roots: there are two app entry points. The demo entry is [lib/main.dart](lib/main.dart). The full app entry that initializes Firebase, providers, and storage is [lib/features/backupmain](lib/features/backupmain).
-- App shell: the main MaterialApp is implemented in [lib/app/app.dart](lib/app/app.dart) and routes are in [lib/app/routes.dart](lib/app/routes.dart).
-- Domain layout: core services live under [lib/core](lib/core) (e.g., `firebase_service.dart`, `storage_service.dart`); app state and business logic live under [lib/data] (providers, repositories, models); UI features live under [lib/features].
+Get an AI coding agent productive in this Flutter repo in one read, and keep it
+from repeating the mistakes that were already made here.
 
-State & architecture patterns
-- Primary state management uses `provider` and `ChangeNotifier` (see [lib/data/providers/*.dart](lib/data/providers)). Prefer following the ChangeNotifier/provider pattern when adding stateful features.
-- Data access follows repository pattern. Firestore access is centralized in repositories under [lib/data/repositories](lib/data/repositories) (example: `MindmapRepository`).
-- Long-lived services: use `StorageService.init()` and `Firebase.initializeApp()` early (see [lib/features/backupmain](lib/features/backupmain)).
+**Read [`docs/AGENT_NOTES.md`](docs/AGENT_NOTES.md) first** — it has the rules,
+the protected areas and the definition of done. This file is the short map.
 
-Important code patterns to follow
-- Undo/redo and canvas layout logic live in `MindmapProvider` ([lib/data/providers/mindmap_provider.dart](lib/data/providers/mindmap_provider.dart)). Avoid breaking its state shape; add migrations if you change model fields.
-- Routes use `AppRoutes.generateRoute` with named constants (see [lib/app/routes.dart](lib/app/routes.dart)). Add screens by registering them here.
-- Firestore collections and helpers are in [lib/core/services/firebase_service.dart](lib/core/services/firebase_service.dart). Use those helpers rather than creating ad-hoc collection paths.
+## Big picture
 
-Build / run / developer workflows
-- Standard Flutter commands apply: `flutter pub get`, `flutter run`, `flutter build`.
-- To run the full app (with Firebase + SharedPreferences initialization) use:
+* **One entry point:** [`lib/main.dart`](lib/main.dart). It initialises
+  `StorageService`, then Firebase (failure-tolerant), then registers the
+  providers and runs `VipMindApp`.
+  *There used to be two* — a demo `main.dart` and the real app in an
+  extension-less `lib/features/backupmain`. Both are gone; do not recreate that
+  split.
+* **App shell:** [`lib/app/app.dart`](lib/app/app.dart) (`VipMindApp`).
+* **Routes:** [`lib/app/routes.dart`](lib/app/routes.dart) — named constants plus
+  `generateRoute`. Every constant must have a `case`; screens are imported from
+  `lib/features/**`, never declared in this file.
+* **Identity:** product `VipMind`, Dart package `vipmind`, app id `com.vipmind`
+  on every platform. Keep them consistent — mismatched ids are why Android could
+  not build.
 
-```bash
-flutter run -t lib/features/backupmain
+## Layering
+
+```
+lib/app        shell, routes, theme (AppTheme), fonts (AppFonts), colours (AppColors)
+lib/core       services (Firebase, SharedPreferences, audio, haptic),
+               utils (validators, extensions, MindmapLayoutEngine, firestore_converters),
+               shared widgets (CustomButton, CustomTextField, ComingSoon)
+lib/data       models · providers (ChangeNotifier) · repositories (the only Firestore code)
+lib/features   UI per feature
 ```
 
-- If you need the simple demo entrypoint use:
+## Patterns to follow
+
+* **State:** `provider` + `ChangeNotifier`. No second state framework.
+* **Data access:** repository pattern; `MindmapRepository` is the only class
+  that touches Firestore collections. Keep
+  `FieldValue.serverTimestamp()` for `createdAt`/`updatedAt`.
+* **Firestore reads:** always through
+  [`lib/core/utils/firestore_converters.dart`](lib/core/utils/firestore_converters.dart)
+  (`firestoreDateOr`, `firestoreDouble`, `firestoreInt`, `firestoreStringList`,
+  `firestoreMap`, `firestoreEnum`, `firestoreColorValue`). Dates come back as
+  `Timestamp`, whole numbers as `int`, arrays as `List<dynamic>`; naive casts
+  threw at runtime and made saved mindmaps unreadable.
+* **Geometry:** pure functions in `MindmapLayoutEngine` (radial / tree /
+  org-chart), unit tested without Firebase. Providers hold state, not math.
+  Use `dart:math`, never a hand-rolled series expansion.
+* **Fonts:** `AppFonts` (bundled Inter). Not `google_fonts` — that downloads at
+  runtime.
+* **Unimplemented feature:** `ComingSoonScreen` from
+  [`lib/core/widgets/coming_soon.dart`](lib/core/widgets/coming_soon.dart) with an
+  honest "Planned for this screen" list.
+
+## Dependencies
+
+Only what is imported is declared (11 packages). `pubspec.yaml` carries a
+comment listing the 29 that were removed as unused. **Add a package in the
+commit that first uses it.**
+
+## Build / run / test
 
 ```bash
-flutter run -t lib/main.dart
+flutter pub get
+flutter run                       # lib/main.dart is the entry point
+flutter analyze                   # CI blocks on this
+flutter test                      # CI blocks on this
+dart format .                     # run before pushing
 ```
 
-- Code generation: Hive models use `hive_generator`. Regenerate with:
+CI: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs analyze + test on
+every push and PR.
 
-```bash
-flutter pub run build_runner build --delete-conflicting-outputs
-```
+Firebase (Android works out of the box; iOS needs
+`GoogleService-Info.plist`): [`docs/SETUP_FIREBASE.md`](docs/SETUP_FIREBASE.md).
+Firestore composite index: [`firestore.indexes.json`](firestore.indexes.json).
+Rules: [`firestore.rules`](firestore.rules).
 
-Project-specific conventions
-- Prefer `ChangeNotifier` + `Provider` for new UI-level state unless a compelling reason to use `flutter_riverpod` exists; the codebase currently uses `provider` extensively.
-- Persisted small settings use `StorageService` (SharedPreferences wrapper) — call `StorageService.init()` during app startup.
-- Firestore timestamps use `FieldValue.serverTimestamp()` inside repository save methods — keep this pattern for `createdAt`/`updatedAt`.
+## Change carefully
 
-Integration points & external deps
-- Firebase: auth, firestore, storage, analytics (see `pubspec.yaml`). Use `FirebaseService` helpers.
-- Local persistence: `shared_preferences` via `StorageService` and `hive` for models (check `dev_dependencies` for generators).
-- Audio and AI helpers: `just_audio`, `flutter_tts`, `dio`/`http` — inspect `lib/core/services` or `lib/features/ai_engine` for existing usage.
+* `lib/data/models/**` — the persisted shape. Changing a field needs a migration
+  path and a `fromJson` test with Firestore-shaped input.
+* `MindmapProvider` keeps undo/redo stacks and in-memory maps keyed by node id;
+  it relies on `position`, `childrenIds`, `parentId`, `depth`, `size`.
+* `android/app/build.gradle.kts` + `android/settings.gradle.kts` — the
+  `com.google.gms.google-services` plugin must stay applied, and `applicationId`
+  must equal `package_name` in `google-services.json`.
+* Exactly one `MainActivity.kt`, in `kotlin/com/vipmind/`, package matching the
+  directory.
 
-What to avoid/change carefully
-- Don't change the mindmap model shape without adding a migration path — `MindmapProvider` keeps in-memory maps keyed by node id and relies on specific fields (positions, childrenIds, size).
-- Avoid adding global singletons that bypass `Provider` (makes testing and state tracing harder).
+## Definition of done
 
-Where to look first when editing
-- Start with these files when making cross-cutting changes: [lib/features/backupmain](lib/features/backupmain), [lib/app/app.dart](lib/app/app.dart), [lib/core/services/firebase_service.dart](lib/core/services/firebase_service.dart), [lib/data/providers/mindmap_provider.dart](lib/data/providers/mindmap_provider.dart), [lib/data/repositories/mindmap_repository.dart](lib/data/repositories/mindmap_repository.dart).
+`flutter analyze` clean · `flutter test` green · `dart format .` applied · new
+screen registered in `AppRoutes` · new model field covered by a `fromJson` test ·
+new package imported in the same commit. Full list in `docs/AGENT_NOTES.md` §8.
 
-If something is unclear
-- Ask the maintainer which entrypoint they consider canonical (demo vs full). Also confirm if `provider` remains the preferred state approach.
+## When something is unclear
 
-Feedback
-- I added repo-specific examples and run commands. Tell me which sections feel incomplete or need more examples and I will iterate.
+* Which features are real vs. placeholders → `docs/AGENT_NOTES.md` §9 and the
+  progress report [`docs/bao-cao-tien-do-2026-10-22.md`](docs/bao-cao-tien-do-2026-10-22.md).
+* Product decisions still open (iOS support, AI provider, Anki vs. export
+  priority) → ask the maintainer; do not pick one silently.

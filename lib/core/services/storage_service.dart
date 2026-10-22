@@ -8,6 +8,16 @@ class StorageService {
     _prefs = await SharedPreferences.getInstance();
   }
 
+  /// True once [init] completed. Every accessor below is null-safe, so calling
+  /// them before init returns `null`/`false` instead of throwing.
+  static bool get isReady => _prefs != null;
+
+  /// Test hook: inject a `SharedPreferences` instance (e.g.
+  /// `SharedPreferences.setMockInitialValues({})` + `getInstance()`).
+  static void setInstanceForTesting(SharedPreferences? prefs) {
+    _prefs = prefs;
+  }
+
   // String
   static Future<bool> setString(String key, String value) async {
     return await _prefs?.setString(key, value) ?? false;
@@ -33,6 +43,15 @@ class StorageService {
 
   static int? getInt(String key) {
     return _prefs?.getInt(key);
+  }
+
+  // String list
+  static Future<bool> setStringList(String key, List<String> value) async {
+    return await _prefs?.setStringList(key, value) ?? false;
+  }
+
+  static List<String>? getStringList(String key) {
+    return _prefs?.getStringList(key);
   }
 
   // Double

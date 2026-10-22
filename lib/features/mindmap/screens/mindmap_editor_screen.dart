@@ -388,7 +388,7 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
             end: Alignment.bottomCenter,
             colors: [
               Theme.of(context).scaffoldBackgroundColor,
-              Theme.of(context).scaffoldBackgroundColor.withOpacity(0),
+              Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0),
             ],
           ),
         ),
@@ -407,7 +407,7 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 8,
                     ),
                   ],
@@ -430,7 +430,7 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 8,
                       ),
                     ],
@@ -791,7 +791,7 @@ class _OptionTile extends StatelessWidget {
       title: Text(title,
           style: TextStyle(color: color, fontWeight: FontWeight.w500)),
       subtitle: Text(subtitle,
-          style: TextStyle(fontSize: 12, color: color?.withOpacity(0.7))),
+          style: TextStyle(fontSize: 12, color: color?.withValues(alpha: 0.7))),
       onTap: onTap,
     );
   }

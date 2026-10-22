@@ -1,4 +1,5 @@
 import 'package:uuid/uuid.dart';
+import '../../core/utils/firestore_converters.dart';
 
 class AudioNoteModel {
   final String id;
@@ -55,13 +56,13 @@ class AudioNoteModel {
 
   factory AudioNoteModel.fromJson(Map<String, dynamic> json) {
     return AudioNoteModel(
-      id: json['id'],
-      filePath: json['filePath'],
-      url: json['url'],
-      duration: Duration(milliseconds: json['durationMs'] ?? 0),
-      transcription: json['transcription'],
-      createdAt: DateTime.parse(json['createdAt']),
-      isProcessing: json['isProcessing'] ?? false,
+      id: json['id'] as String,
+      filePath: json['filePath'] as String?,
+      url: json['url'] as String?,
+      duration: Duration(milliseconds: firestoreInt(json['durationMs'])),
+      transcription: json['transcription'] as String?,
+      createdAt: firestoreDateOr(json['createdAt'], DateTime.now()),
+      isProcessing: (json['isProcessing'] ?? false) as bool,
     );
   }
 }

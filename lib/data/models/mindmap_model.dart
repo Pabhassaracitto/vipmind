@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';  // Thêm dòng này
 import 'package:uuid/uuid.dart';
 import 'node_model.dart';
+import '../../core/utils/firestore_converters.dart';
 import 'connection_model.dart';
 
 enum MindmapLayout { radial, tree, orgChart, fishbone, timeline, freeform }
@@ -195,55 +196,39 @@ class MindmapModel {
   // From JSON
   factory MindmapModel.fromJson(Map<String, dynamic> json) {
     final nodesMap = <String, NodeModel>{};
-    if (json['nodes'] != null) {
-      (json['nodes'] as Map<String, dynamic>).forEach((key, value) {
-        nodesMap[key] = NodeModel.fromJson(value);
+    final rawNodes = json['nodes'];
+    if (rawNodes is Map) {
+      rawNodes.forEach((key, value) {
+        nodesMap[key.toString()] = NodeModel.fromJson(firestoreMap(value));
       });
     }
 
     return MindmapModel(
-      id: json['id'],
-      title: json['title'],
-      description: json['description'],
-      thumbnailUrl: json['thumbnailUrl'],
+      id: json['id'] as String,
+      title: (json['title'] ?? 'Untitled') as String,
+      description: json['description'] as String?,
+      thumbnailUrl: json['thumbnailUrl'] as String?,
       nodes: nodesMap,
-      connections: (json['connections'] as List?)
-          ?.map((c) => ConnectionModel.fromJson(c))
-          .toList() ??
-          [],
-      rootNodeId: json['rootNodeId'],
-      layout: MindmapLayout.values[json['layout'] ?? 0],
-      style: MindmapStyle.values[json['style'] ?? 0],
-      templateId: json['templateId'],
-      ownerId: json['ownerId'],
-      collaboratorIds: List<String>.from(json['collaboratorIds'] ?? []),
-      isPublic: json['isPublic'] ?? false,
-      isFavorite: json['isFavorite'] ?? false,
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
-      settings: json['settings'],
-      tags: List<String>.from(json['tags'] ?? []),
-    );
-  }
-
-  // Create empty mindmap with root node
-  factory MindmapModel.createNew({
-    required String title,
-    required String ownerId,
-    String rootText = 'Central Idea',
-  }) {
-    final rootNode = NodeModel(
-      text: rootText,
-      position: const Offset(400, 300),
-      size: const Size(180, 80),
-      depth: 0,
-    );
-
-    return MindmapModel(
-      title: title,
-      ownerId: ownerId,
-      nodes: {rootNode.id: rootNode},
-      rootNodeId: rootNode.id,
+      connections: firestoreMapList(json['connections'])
+          .map(ConnectionModel.fromJson)
+          .toList(),
+      rootNodeId: (json['rootNodeId'] ?? '') as String,
+      layout: firestoreEnum(json['layout'], MindmapLayout.values,
+          fallback: MindmapLayout.radial),
+      style: firestoreEnum(json['style'], MindmapStyle.values,
+          fallback: MindmapStyle.modern),
+      templateId: json['templateId'] as String?,
+      ownerId: (json['ownerId'] ?? '') as String,
+      collaboratorIds: firestoreStringList(json['collaboratorIds']),
+      isPublic: (json['isPublic'] ?? false) as bool,
+      isFavorite: (json['isFavorite'] ?? false) as bool,
+      // The repository writes FieldValue.serverTimestamp() for both fields, so
+      // they arrive as Timestamp — DateTime.parse() used to throw here, which
+      // made every saved mindmap impossible to reopen.
+      createdAt: firestoreDateOr(json['createdAt'], DateTime.now()),
+      updatedAt: firestoreDateOr(json['updatedAt'], DateTime.now()),
+      settings: json['settings'] == null ? null : firestoreMap(json['settings']),
+      tags: firestoreStringList(json['tags']),
     );
   }
 }

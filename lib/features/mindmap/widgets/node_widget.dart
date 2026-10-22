@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../app/theme/app_fonts.dart';
 
 import '../../../data/models/node_model.dart';
-import '../../../app/theme/app_colors.dart';
 
 class NodeWidget extends StatefulWidget {
   final NodeModel node;
@@ -97,7 +96,7 @@ class _NodeWidgetState extends State<NodeWidget>
         end: Alignment.bottomRight,
         colors: [
           baseColor,
-          baseColor.withOpacity(0.85),
+          baseColor.withValues(alpha: 0.85),
         ],
       ),
       borderRadius: _getBorderRadius(),
@@ -109,7 +108,7 @@ class _NodeWidgetState extends State<NodeWidget>
       boxShadow: [
         // Base shadow
         BoxShadow(
-          color: baseColor.withOpacity(widget.isZenMode ? 0.5 : 0.3),
+          color: baseColor.withValues(alpha: widget.isZenMode ? 0.5 : 0.3),
           blurRadius: isHighlighted ? 20 : 12,
           spreadRadius: isHighlighted ? 4 : 2,
           offset: const Offset(0, 4),
@@ -117,7 +116,7 @@ class _NodeWidgetState extends State<NodeWidget>
         // Glow effect on hover
         if (_isHovered || widget.isSelected)
           BoxShadow(
-            color: baseColor.withOpacity(0.4 * _glowAnimation.value),
+            color: baseColor.withValues(alpha: 0.4 * _glowAnimation.value),
             blurRadius: 30,
             spreadRadius: 8,
           ),
@@ -169,7 +168,7 @@ class _NodeWidgetState extends State<NodeWidget>
           // Title
           Text(
             widget.node.text,
-            style: GoogleFonts.inter(
+            style: AppFonts.inter(
               fontSize: _getTitleFontSize(),
               fontWeight: FontWeight.w600,
               color: widget.node.textColor,
@@ -185,9 +184,9 @@ class _NodeWidgetState extends State<NodeWidget>
             const SizedBox(height: 8),
             Text(
               widget.node.description!,
-              style: GoogleFonts.inter(
+              style: AppFonts.inter(
                 fontSize: 12,
-                color: widget.node.textColor.withOpacity(0.8),
+                color: widget.node.textColor.withValues(alpha: 0.8),
                 height: 1.4,
               ),
               maxLines: 3,
@@ -296,7 +295,7 @@ class _IndicatorBadge extends StatelessWidget {
       margin: const EdgeInsets.only(right: 8),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

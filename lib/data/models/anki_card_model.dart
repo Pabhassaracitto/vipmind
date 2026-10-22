@@ -1,4 +1,5 @@
 import 'package:uuid/uuid.dart';
+import '../../core/utils/firestore_converters.dart';
 
 class AnkiCardModel {
   final String id;
@@ -79,32 +80,31 @@ class AnkiCardModel {
 
   factory AnkiCardModel.fromJson(Map<String, dynamic> json) {
     return AnkiCardModel(
-      id: json['id'],
-      front: json['front'],
-      back: json['back'],
-      imageUrl: json['imageUrl'],
-      audioUrl: json['audioUrl'],
-      interval: json['interval'] ?? 1,
-      easeFactor: (json['easeFactor'] ?? 2.5).toDouble(),
-      repetitions: json['repetitions'] ?? 0,
-      nextReview: json['nextReview'] != null
-          ? DateTime.parse(json['nextReview'])
-          : null,
-      createdAt: DateTime.parse(json['createdAt']),
-      sourceNodeId: json['sourceNodeId'],
-      sourceMindmapId: json['sourceMindmapId'],
+      id: json['id'] as String,
+      front: (json['front'] ?? '') as String,
+      back: (json['back'] ?? '') as String,
+      imageUrl: json['imageUrl'] as String?,
+      audioUrl: json['audioUrl'] as String?,
+      interval: firestoreInt(json['interval'], fallback: 1),
+      easeFactor: firestoreDouble(json['easeFactor'], fallback: 2.5),
+      repetitions: firestoreInt(json['repetitions']),
+      nextReview: firestoreDate(json['nextReview']),
+      createdAt: firestoreDateOr(json['createdAt'], DateTime.now()),
+      sourceNodeId: json['sourceNodeId'] as String?,
+      sourceMindmapId: json['sourceMindmapId'] as String?,
     );
   }
-
-  // SM-2 Algorithm for spaced repetition
+  /// SM-2 spaced repetition.
+  ///
+  /// [quality] is the learner's self-grade from 0 to 5: 0-2 = failed,
+  /// 3-5 = passed. Pinned by `test/anki_sm2_test.dart` — the (not yet built)
+  /// review UI must not change this scheduling.
   void review(int quality) {
-    // quality: 0-5 (0-2 = fail, 3-5 = pass)
     if (quality < 3) {
-      // Failed - reset
+      // Failed: start the ladder over.
       repetitions = 0;
       interval = 1;
     } else {
-      // Passed
       if (repetitions == 0) {
         interval = 1;
       } else if (repetitions == 1) {
@@ -115,14 +115,15 @@ class AnkiCardModel {
       repetitions++;
     }
 
-    // Update ease factor
-    easeFactor = easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+    // SM-2 ease adjustment.
+    easeFactor =
+        easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
     if (easeFactor < 1.3) easeFactor = 1.3;
 
-    // Set next review date
     nextReview = DateTime.now().add(Duration(days: interval));
   }
 
+  /// A card with no scheduled review is due immediately.
   bool get isDue {
     if (nextReview == null) return true;
     return DateTime.now().isAfter(nextReview!);

@@ -102,8 +102,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 ? [
               BoxShadow(
                 color: _hasError
-                    ? AppColors.errorRed.withOpacity(0.2)
-                    : AppColors.primaryBlue.withOpacity(0.2),
+                    ? AppColors.errorRed.withValues(alpha: 0.2)
+                    : AppColors.primaryBlue.withValues(alpha: 0.2),
                 blurRadius: 8,
                 spreadRadius: 2,
               ),

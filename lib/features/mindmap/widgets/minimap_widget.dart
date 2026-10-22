@@ -44,17 +44,17 @@ class MinimapWidget extends StatelessWidget {
         width: _minimapSize,
         height: _minimapSize,
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor.withOpacity(0.95),
+          color: Theme.of(context).cardColor.withValues(alpha: 0.95),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ],
           border: Border.all(
-            color: AppColors.textSecondary.withOpacity(0.1),
+            color: AppColors.textSecondary.withValues(alpha: 0.1),
           ),
         ),
         child: ClipRRect(
@@ -159,7 +159,7 @@ class MinimapWidget extends StatelessWidget {
             color: AppColors.primaryBlue,
             width: 2,
           ),
-          color: AppColors.primaryBlue.withOpacity(0.1),
+          color: AppColors.primaryBlue.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(4),
         ),
       ),

@@ -362,7 +362,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         SizedBox(height: 8),
         Text(
-          'Start your creative journey with NeuroMindmap',
+          'Start your creative journey with VipMind',
           style: TextStyle(
             fontSize: 14,
             color: AppColors.textLightSecondary,

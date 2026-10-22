@@ -65,7 +65,7 @@ class ConnectionPainter extends CustomPainter {
     final paint = Paint()
       ..color = isHighlighted
           ? Colors.white
-          : (isZenMode ? Colors.white38 : from.color.withOpacity(0.6))
+          : (isZenMode ? Colors.white38 : from.color.withValues(alpha: 0.6))
       ..strokeWidth = (isHighlighted ? 3.0 : 2.0) * scale
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -82,7 +82,7 @@ class ConnectionPainter extends CustomPainter {
     // Draw glow effect for highlighted connections
     if (isHighlighted) {
       final glowPaint = Paint()
-        ..color = Colors.white.withOpacity(0.3)
+        ..color = Colors.white.withValues(alpha: 0.3)
         ..strokeWidth = 8.0 * scale
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
@@ -104,7 +104,7 @@ class ConnectionPainter extends CustomPainter {
     final toPoint = _getEdgePoint(to, fromCenter);
 
     final paint = Paint()
-      ..color = connection.color.withOpacity(0.8)
+      ..color = connection.color.withValues(alpha: 0.8)
       ..strokeWidth = connection.strokeWidth * scale
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -259,7 +259,7 @@ class ConnectionPainter extends CustomPainter {
         fontSize: 10 * scale,
         backgroundColor: isZenMode
             ? Colors.black54
-            : Colors.white.withOpacity(0.9),
+            : Colors.white.withValues(alpha: 0.9),
       ),
     );
 

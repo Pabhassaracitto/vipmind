@@ -161,7 +161,7 @@ class _MindmapCanvasState extends State<MindmapCanvas>
       painter: _GridPainter(
         offset: widget.canvasOffset,
         scale: widget.canvasScale,
-        color: AppColors.textSecondary.withOpacity(0.05),
+        color: AppColors.textSecondary.withValues(alpha: 0.05),
       ),
     );
   }
@@ -226,7 +226,7 @@ class _MindmapCanvasState extends State<MindmapCanvas>
                     gradient: AppColors.primaryGradient,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primaryBlue.withOpacity(0.3),
+                        color: AppColors.primaryBlue.withValues(alpha: 0.3),
                         blurRadius: 40,
                         spreadRadius: 10,
                       ),
