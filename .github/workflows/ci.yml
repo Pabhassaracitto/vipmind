@@ -119,27 +119,33 @@ jobs:
           code = os.environ.get('TEST_EXIT', '0')
           lines = open('test.txt', encoding='utf-8', errors='replace').read().split('\n')
 
-          def esc(text):
-              return (text.replace('%', '%25').replace('\r', ' ')
-                          .replace('\n', ' ').replace(':', '%3A').replace(',', '%2C'))
+          def esc(t):
+              return (t.replace('%', '%25').replace('\r', ' ').replace('\n', ' ')
+                       .replace(':', '%3A').replace(',', '%2C'))
 
+          # Progress lines ("00:00 +3: ...") are noise; the failure block that
+          # follows them is what matters.
+          progress = re.compile(r'^\d\d:\d\d\s+\+\d+.*$')
           interesting = re.compile(
-              r'\[E\]|Some tests failed|Failed to load|Expected:|Actual:|'
-              r'Which:|^\s*\d+:\d+\s+|Test failed|Exception|Error:'
-          )
-          hits = [l.strip() for l in lines if l.strip() and interesting.search(l)]
-          for line in hits[:200]:
-              print(f'::error::{esc(line[:400])}')
-          if code != '0' and not hits:
-              print('::error::flutter test failed but no known pattern matched; raw tail below')
-              for raw in lines[-80:]:
-                  if raw.strip():
-                      print(f'::error::{esc(raw.strip()[:400])}')
+              r'\[E\]|Some tests failed|Failed to load|Expected:|Actual:|Which:|'
+              r'Test failed|Exception|Error:|error:|Compilation failed|'
+              r'not found|isn\'t defined|can\'t be|No such|failed to|throws')
+
+          kept = [l.rstrip() for l in lines
+                  if l.strip() and not progress.match(l.strip())
+                  and interesting.search(l)]
+          for line in kept[:120]:
+              print(f'::error::{esc(line.strip()[:400])}')
+
+          if code != '0' and not kept:
+              print('::error::flutter test failed but nothing matched; raw tail below')
+          for line in [l for l in lines if l.strip()][-40:]:
+              print(f'::notice::tail| {esc(line.strip()[:300])}')
           PYEOF
           {
             echo "## flutter test (exit $code)"
             echo '```'
-            tail -n 200 test.txt
+            cat test.txt
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
           exit $code
