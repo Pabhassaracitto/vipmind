@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../app/routes.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../core/services/firebase_service.dart';
 import '../../../data/providers/mindmap_provider.dart';
 import '../../../data/models/mindmap_model.dart';
 import '../widgets/mindmap_card.dart';
@@ -33,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _loadMindmaps() {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = FirebaseService.currentUser;
     if (user != null) {
       context.read<MindmapProvider>().loadMindmaps(user.uid);
     }
@@ -216,7 +216,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.1),
+              color: AppColors.primaryBlue.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -291,7 +291,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _createNewMindmap() async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = FirebaseService.currentUser;
     if (user == null) return;
 
     final mindmap = await context.read<MindmapProvider>().createMindmap(
@@ -486,9 +486,9 @@ class _OptionTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [

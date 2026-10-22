@@ -9,7 +9,13 @@ class AudioProvider extends ChangeNotifier {
   bool get isSoundEnabled => _isSoundEnabled;
   bool get isAmbientPlaying => AudioService.isAmbientPlaying;
 
+  /// Starts an ambient loop. `'none'` (or an empty value) stops it, so callers
+  /// never have to special-case the "off" option.
   void playAmbient(String type) {
+    if (type.isEmpty || type == 'none') {
+      stopAmbient();
+      return;
+    }
     _currentAmbient = type;
     AudioService.playAmbient(type);
     notifyListeners();

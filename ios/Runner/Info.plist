@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Vipmind New</string>
+	<string>VipMind</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>vipmind_new</string>
+	<string>vipmind</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -41,6 +41,16 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- Permission strings. iOS terminates the app at runtime if a protected
+	     API is used without its description. Microphone/photo are declared now
+	     because Voice-to-Mindmap and Image-to-Mindmap are on the roadmap; the
+	     Android manifest already declares the matching permissions. -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>VipMind uses the microphone to turn your voice into a mindmap.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>VipMind can read a photo of your notes and turn it into a mindmap.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>VipMind can photograph a whiteboard or page and turn it into a mindmap.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

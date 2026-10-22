@@ -35,11 +35,11 @@ class ToolbarWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor.withOpacity(0.95),
+        color: Theme.of(context).cardColor.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -151,14 +151,14 @@ class _ToolbarIconButton extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: isEnabled
-                  ? buttonColor.withOpacity(0.1)
+                  ? buttonColor.withValues(alpha: 0.1)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               icon,
               size: 22,
-              color: isEnabled ? buttonColor : AppColors.textSecondary.withOpacity(0.5),
+              color: isEnabled ? buttonColor : AppColors.textSecondary.withValues(alpha: 0.5),
             ),
           ),
         ),
@@ -197,7 +197,7 @@ class _LayoutButton extends StatelessWidget {
           border: isSelected
               ? null
               : Border.all(
-            color: AppColors.textSecondary.withOpacity(0.2),
+            color: AppColors.textSecondary.withValues(alpha: 0.2),
           ),
         ),
         child: Row(

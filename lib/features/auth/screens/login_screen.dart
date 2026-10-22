@@ -253,7 +253,7 @@ class _LoginScreenState extends State<LoginScreen> {
             gradient: AppColors.primaryGradient,
             boxShadow: [
               BoxShadow(
-                color: AppColors.primaryBlue.withOpacity(0.4),
+                color: AppColors.primaryBlue.withValues(alpha: 0.4),
                 blurRadius: 20,
                 spreadRadius: 5,
               ),
@@ -297,7 +297,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Expanded(
           child: Container(
             height: 1,
-            color: AppColors.textLightSecondary.withOpacity(0.3),
+            color: AppColors.textLightSecondary.withValues(alpha: 0.3),
           ),
         ),
         const Padding(
@@ -313,7 +313,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Expanded(
           child: Container(
             height: 1,
-            color: AppColors.textLightSecondary.withOpacity(0.3),
+            color: AppColors.textLightSecondary.withValues(alpha: 0.3),
           ),
         ),
       ],
@@ -363,7 +363,7 @@ class _SocialButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
         decoration: BoxDecoration(
           border: Border.all(
-            color: AppColors.textLightSecondary.withOpacity(0.3),
+            color: AppColors.textLightSecondary.withValues(alpha: 0.3),
           ),
           borderRadius: BorderRadius.circular(12),
         ),

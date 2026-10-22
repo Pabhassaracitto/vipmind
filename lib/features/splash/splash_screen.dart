@@ -1,12 +1,28 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
+
 import 'package:animate_do/animate_do.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 import '../../app/routes.dart';
 import '../../app/theme/app_colors.dart';
+import '../../core/services/firebase_service.dart';
+
+/// Decides where the splash screen goes: `true` = already signed in.
+typedef SignedInCheck = bool Function();
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  const SplashScreen({
+    super.key,
+    this.signedInCheck,
+    this.navigationDelay = const Duration(milliseconds: 3000),
+  });
+
+  /// Overridable so the auth decision can be tested without Firebase.
+  /// Defaults to reading the current Firebase user.
+  final SignedInCheck? signedInCheck;
+
+  /// How long the branding is shown before navigating.
+  final Duration navigationDelay;
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -49,17 +65,23 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _navigateToNextScreen() async {
-    await Future.delayed(const Duration(milliseconds: 3000));
+    await Future<void>.delayed(widget.navigationDelay);
 
     if (!mounted) return;
 
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
+    final signedIn = widget.signedInCheck ?? _isSignedInToFirebase;
+    if (signedIn()) {
       Navigator.pushReplacementNamed(context, AppRoutes.home);
     } else {
       Navigator.pushReplacementNamed(context, AppRoutes.login);
     }
   }
+
+  /// Defaults to [FirebaseService.isLoggedIn], which returns `false` instead of
+  /// throwing when Firebase has not been initialised. Reading
+  /// `FirebaseAuth.instance` directly here used to take the whole splash screen
+  /// down instead of falling back to the login route.
+  bool _isSignedInToFirebase() => FirebaseService.isLoggedIn;
 
   @override
   void dispose() {
@@ -104,7 +126,7 @@ class _SplashScreenState extends State<SplashScreen>
                 FadeInUp(
                   delay: const Duration(milliseconds: 500),
                   child: const Text(
-                    'NeuroMindmap',
+                    'VipMind',
                     style: TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
@@ -163,7 +185,7 @@ class _SplashScreenState extends State<SplashScreen>
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryBlue.withOpacity(0.5),
+            color: AppColors.primaryBlue.withValues(alpha: 0.5),
             blurRadius: 30,
             spreadRadius: 10,
           ),
@@ -225,7 +247,7 @@ class _NeuralLoadingIndicatorState extends State<_NeuralLoadingIndicator>
                 height: 12 * scale,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.5 + scale * 0.5),
+                  color: Colors.white.withValues(alpha: 0.5 + scale * 0.5),
                 ),
               );
             },

@@ -20,12 +20,9 @@
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
 
     <application
-        android:label="NeuroMindmap"
+        android:label="VipMind"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="true"
-        android:requestLegacyExternalStorage="true"
-        android:largeHeap="true"
         android:hardwareAccelerated="true"
         tools:targetApi="35">
 
@@ -55,10 +52,6 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-        <!-- Firebase meta-data (optional) -->
-        <meta-data
-            android:name="firebase_performance_logcat_enabled"
-            android:value="false" />
     </application>
 
     <!-- Queries for URL launcher -->

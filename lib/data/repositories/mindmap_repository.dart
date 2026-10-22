@@ -2,7 +2,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/mindmap_model.dart';
 
 class MindmapRepository {
-  final CollectionReference<Map<String, dynamic>> _collection =
+  /// Firestore is resolved lazily on purpose.
+  ///
+  /// `FirebaseFirestore.instance` throws when Firebase is not initialised, and
+  /// this repository is constructed eagerly by `MindmapProvider` — which is
+  /// created in `main()` before the first frame. A field initialiser here would
+  /// therefore take the whole app down on any platform without Firebase config
+  /// (iOS today: no GoogleService-Info.plist). With a getter, construction is
+  /// always safe and the failure surfaces inside the try/catch of each method,
+  /// where it becomes a normal error state.
+  CollectionReference<Map<String, dynamic>> get _collection =>
       FirebaseFirestore.instance.collection('mindmaps');
 
   // Get all mindmaps for a user
