@@ -12,6 +12,23 @@ import 'package:vipmind/features/splash/splash_screen.dart';
 /// left in the tree with a pending timer fails the test with "timer still
 /// pending", which is exactly what we want to notice.
 void main() {
+  /// Advances past the navigation delay and the push transition, then settles.
+  ///
+  /// `pumpAndSettle` alone is not enough while the splash is on screen (its
+  /// loading indicator repeats forever), and `pump(duration)` alone can leave the
+  /// navigation timer pending — which fails the test with "A Timer is still
+  /// pending even after the widget tree was disposed".
+  Future<void> drain(WidgetTester tester, Duration delay) async {
+    await tester.pump(delay + const Duration(milliseconds: 10));
+    for (var i = 0; i < 6; i++) {
+      await tester.pump(const Duration(milliseconds: 400));
+    }
+    if (find.byType(SplashScreen).evaluate().isEmpty) {
+      // Splash is gone, so nothing repeats forever any more.
+      await tester.pumpAndSettle(const Duration(milliseconds: 400));
+    }
+  }
+
   /// Routes for `/home` and `/login` as inert stubs.
   ///
   /// Two reasons this exists:
@@ -57,10 +74,7 @@ void main() {
       },
     ));
 
-    // Past the navigation delay, plus the push transition.
-    await tester.pump(delay + const Duration(milliseconds: 50));
-    await tester.pump(const Duration(milliseconds: 500));
-    await tester.pump(const Duration(milliseconds: 500));
+    await drain(tester, delay);
     return visited;
   }
 
@@ -91,9 +105,7 @@ void main() {
 
     // Let the timer fire and the splash be disposed, so no timer is left
     // pending at teardown.
-    await tester.pump(delay + const Duration(milliseconds: 50));
-    await tester.pump(const Duration(milliseconds: 500));
-    await tester.pump(const Duration(milliseconds: 500));
+    await drain(tester, delay);
     expect(find.byType(SplashScreen), findsNothing);
   });
 
@@ -130,9 +142,7 @@ void main() {
     expect(find.byType(SplashScreen), findsOneWidget,
         reason: 'navigated before the branding delay was over');
 
-    await tester.pump(const Duration(seconds: 2));
-    await tester.pump(const Duration(milliseconds: 500));
-    await tester.pump(const Duration(milliseconds: 500));
+    await drain(tester, const Duration(seconds: 1));
     expect(find.byType(SplashScreen), findsNothing);
   });
 

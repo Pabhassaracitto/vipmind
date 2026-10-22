@@ -28,8 +28,18 @@ void main() {
       // Compare the instant, not the zone flag: Timestamp.toDate() hands back a
       // DateTime in the local zone for the same moment, and DateTime equality in
       // Dart is zone-sensitive.
-      expect(firestoreDate(Timestamp.fromDate(date))!.millisecondsSinceEpoch,
-          date.millisecondsSinceEpoch);
+      final fromTimestamp = firestoreDate(Timestamp.fromDate(date));
+      // Printed on purpose: this assertion failed twice with the reason missing
+      // from the report, so the inputs are part of the output now.
+      debugPrint('DATES: in=${date.toIso8601String()} '
+          'ts=${Timestamp.fromDate(date)} '
+          'tsToDate=${Timestamp.fromDate(date).toDate().toIso8601String()} '
+          'out=${fromTimestamp?.toIso8601String()} '
+          'iso=${firestoreDate(date.toIso8601String())?.toIso8601String()} '
+          'millis=${firestoreDate(date.millisecondsSinceEpoch)?.toIso8601String()} '
+          'notADate=${firestoreDate('not a date')} empty=${firestoreDate('')}');
+      expect(fromTimestamp, isNotNull);
+      expect(fromTimestamp!.millisecondsSinceEpoch, date.millisecondsSinceEpoch);
       expect(firestoreDate(date.toIso8601String()), date);
       expect(firestoreDate(date.millisecondsSinceEpoch), date);
       expect(firestoreDate(null), isNull);
@@ -284,7 +294,17 @@ void main() {
 
       expect(map.nodes, hasLength(3));
 
+      // Printed on purpose: this test failed twice with no reason captured in
+      // the CI report.
+      debugPrint('REMOVENODE before: keys=${map.nodes.keys.toList()} '
+          'rootChildren=${map.nodes[rootId]?.childrenIds} '
+          'connections=${map.connections.length}');
+
       map.removeNode('child');
+
+      debugPrint('REMOVENODE after: keys=${map.nodes.keys.toList()} '
+          'rootChildren=${map.nodes[rootId]?.childrenIds} '
+          'connections=${map.connections.length}');
 
       // Map key order is an implementation detail, not a contract.
       expect(map.nodes, hasLength(1));

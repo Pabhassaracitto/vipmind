@@ -204,19 +204,30 @@ jobs:
               if not l.startswith('\u2550\u2550\u2561'):
                   continue
               chunk = []
-              for x in test[i:i + 60]:
+              for x in test[i:i + 70]:
                   t = x.rstrip()
                   if not t.strip():
                       continue
                   if t.startswith('\u2550' * 10) and len(chunk) > 1:
                       break
-                  if drop.search(t):
-                      continue
-                  if keep.search(t) or len(chunk) < 3:
+                  # `keep` wins over `drop`: an earlier version dropped every
+                  # indented line, which deleted exactly the Expected/Actual/Which
+                  # triplet, so 3 of 5 failures arrived with no reason at all.
+                  if keep.search(t):
                       chunk.append(t[:220])
-                  if len(chunk) > 22:
+                  elif not drop.search(t) and len(chunk) < 6:
+                      chunk.append(t[:220])
+                  if len(chunk) > 24:
                       break
               blocks.append('\n'.join(chunk))
+
+          # Backstop: if there are more failures than blocks, some failure has no
+          # captured reason. Say so explicitly and dump the last raw lines rather
+          # than letting the report look complete when it is not.
+          if len(failing) > len(blocks):
+              blocks.append('!! ' + str(len(failing) + 1) + ' failing tests but only '
+                            + str(len(blocks)) + ' exception blocks captured.\n'
+                            + '\n'.join(x.rstrip()[:220] for x in test[-260:] if x.strip()))
 
           # debugPrint output from a failing test lands just before its [E] line,
           # which is where diagnostics like ZEN TEXTS live.
@@ -226,7 +237,7 @@ jobs:
                   context.append(l.strip()[:220])
               elif '[E]' in l:
                   window = [x.strip() for x in test[max(0, i - 30):i]
-                            if x.strip() and (x.startswith('ZEN ') or
+                            if x.strip() and (x.startswith(('ZEN ', 'DATES:', 'REMOVENODE')) or
                                               x.startswith('Expected') or
                                               x.startswith('  Actual') or
                                               'debugPrint' in x)]
