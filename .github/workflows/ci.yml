@@ -134,7 +134,7 @@ jobs:
           kept = [l.rstrip() for l in lines
                   if l.strip() and not progress.match(l.strip())
                   and interesting.search(l)]
-          for line in kept[:120]:
+          for line in kept[:400]:
               print(f'::error::{esc(line.strip()[:400])}')
 
           if code != '0' and not kept:
@@ -167,6 +167,21 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
           exit $code
+
+      # Raw output as an artifact: annotations are capped at 10 in the API
+      # response, and the job log lives on a blob host that tooling often cannot
+      # reach. An artifact is the reliable way to read a full failure list.
+      - name: Upload analyzer and test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analyze-test-output
+          path: |
+            analyze.txt
+            test.txt
+            format.txt
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Check the template catalog is valid JSON
         run: python3 -c "import json;json.load(open('assets/templates/default_templates.json'));print('default_templates.json OK')"
