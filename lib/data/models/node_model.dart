@@ -158,8 +158,10 @@ class NodeModel {
       'positionY': position.dy,
       'width': size.width,
       'height': size.height,
-      'color': color.value,
-      'textColor': textColor.value,
+      // toARGB32() replaces the deprecated Color.value; same 32-bit ARGB int,
+      // so documents already saved keep reading back correctly.
+      'color': color.toARGB32(),
+      'textColor': textColor.toARGB32(),
       'shape': shape.index,
       'type': type.index,
       'iconName': iconName,

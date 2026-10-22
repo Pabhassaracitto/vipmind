@@ -85,15 +85,15 @@ class ComingSoon extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       children: [
                         Icon(
                           Icons.construction_rounded,
                           size: 18,
                           color: AppColors.warningOrange,
                         ),
-                        const SizedBox(width: 8),
-                        const Text(
+                        SizedBox(width: 8),
+                        Text(
                           'Planned for this screen',
                           style: TextStyle(
                             fontSize: 13,

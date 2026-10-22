@@ -43,8 +43,7 @@ class AppFonts {
   /// i.e. Roboto). So the family is set on every slot explicitly.
   static TextTheme textTheme([TextTheme? base]) {
     final source = base ?? const TextTheme();
-    TextStyle? apply(TextStyle? style) =>
-        style == null ? null : style.copyWith(fontFamily: family);
+    TextStyle? apply(TextStyle? style) => style?.copyWith(fontFamily: family);
 
     return TextTheme(
       displayLarge: apply(source.displayLarge),

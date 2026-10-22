@@ -103,7 +103,7 @@ void main() {
       expect(restored.description, reference.description);
       expect(restored.position, reference.position);
       expect(restored.size, reference.size);
-      expect(restored.color.value, reference.color.value);
+      expect(restored.color.toARGB32(), reference.color.toARGB32());
       expect(restored.shape, reference.shape);
       expect(restored.type, reference.type);
       expect(restored.childrenIds, reference.childrenIds);
@@ -141,8 +141,8 @@ void main() {
 
       expect(node.position, const Offset(10, 20));
       expect(node.size, const Size(150, 60));
-      expect(node.color.value, 0xFF4A6FA5);
-      expect(node.textColor.value, 0xFFFFFFFF);
+      expect(node.color.toARGB32(), 0xFF4A6FA5);
+      expect(node.textColor.toARGB32(), 0xFFFFFFFF);
       expect(node.shape, NodeShape.rectangle);
       expect(node.type, NodeType.note);
       expect(node.childrenIds, ['a', 'b']);
@@ -212,7 +212,7 @@ void main() {
       expect(map.nodes.keys, ['root']);
       expect(map.rootNode?.text, 'Root');
       expect(map.connections.single.strokeWidth, 3.0);
-      expect(map.connections.single.color.value, 0xFF06D6A0);
+      expect(map.connections.single.color.toARGB32(), 0xFF06D6A0);
     });
 
     test('round-trips through JSON', () {
@@ -290,7 +290,7 @@ void main() {
       };
       final connection = ConnectionModel.fromJson(json);
 
-      expect(connection.color.value, 0xFF4A6FA5);
+      expect(connection.color.toARGB32(), 0xFF4A6FA5);
       expect(connection.strokeWidth, 2.0);
       expect(connection.style, ConnectionStyle.curved);
       expect(connection.type, ConnectionType.parent);
