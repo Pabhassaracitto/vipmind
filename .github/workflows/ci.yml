@@ -186,11 +186,51 @@ jobs:
                   if entry not in failing:
                       failing.append(entry)
 
+          # Keep only the diagnostic lines of each exception block. The full
+          # block is ~40 lines of Flutter stack frames; compressing it is what
+          # lets every failure fit in one comment instead of the last two.
+          keep = re.compile(
+              r'^\u2550\u2550\u2561|^The following|^Expected:|^\s*Actual:|^\s*Which:|'
+              r'^When the exception|^This was caught|^\s*file:///|^The test description was|'
+              r'^\s{2}\S.*$|^Failed assertion|^A Timer is still pending|^pumpAndSettle timed out|'
+              r'^Could not find a generator|^ZEN TEXTS:|^Bad state|^NoSuchMethod|'
+              r'^ProviderNotFoundException|^Test failed')
+          drop = re.compile(r'package:flutter/|package:flutter_test/|package:matcher|'
+                            r'package:fake_async|dart:async|package:stack_trace|'
+                            r'asynchronous suspension|elided|^#\d+')
+
           blocks = []
           for i, l in enumerate(test):
-              if l.startswith('\u2550\u2550\u2561'):
-                  chunk = [x.rstrip() for x in test[i:i + 40] if x.strip()]
-                  blocks.append('\n'.join(chunk))
+              if not l.startswith('\u2550\u2550\u2561'):
+                  continue
+              chunk = []
+              for x in test[i:i + 60]:
+                  t = x.rstrip()
+                  if not t.strip():
+                      continue
+                  if t.startswith('\u2550' * 10) and len(chunk) > 1:
+                      break
+                  if drop.search(t):
+                      continue
+                  if keep.search(t) or len(chunk) < 3:
+                      chunk.append(t[:220])
+                  if len(chunk) > 22:
+                      break
+              blocks.append('\n'.join(chunk))
+
+          # debugPrint output from a failing test lands just before its [E] line,
+          # which is where diagnostics like ZEN TEXTS live.
+          context = []
+          for i, l in enumerate(test):
+              if '[E]' in l and not l.strip().startswith('00:'):
+                  context.append(l.strip()[:220])
+              elif '[E]' in l:
+                  window = [x.strip() for x in test[max(0, i - 30):i]
+                            if x.strip() and (x.startswith('ZEN ') or
+                                              x.startswith('Expected') or
+                                              x.startswith('  Actual') or
+                                              'debugPrint' in x)]
+                  context.extend(w[-6:] for w in [window] if w)
 
           lines.append('#### flutter test \u2014 ' + (counts or 'summary line not found'))
           lines.append('')
@@ -200,10 +240,18 @@ jobs:
               for name in failing:
                   lines.append('- `' + name + '`')
               lines.append('')
+          if context:
+              flat = [c for item in context for c in (item if isinstance(item, list) else [item])]
+              if flat:
+                  lines.append('#### Diagnostics printed by the tests')
+                  lines.append('```')
+                  lines.extend(flat[:60])
+                  lines.append('```')
+                  lines.append('')
           if blocks:
-              lines.append('#### Exception detail')
+              lines.append('#### Exception detail (' + str(len(blocks)) + ' blocks)')
               lines.append('```')
-              lines.append(('\n' + '=' * 70 + '\n').join(blocks[:40]))
+              lines.append(('\n' + '-' * 70 + '\n').join(blocks[:60]))
               lines.append('```')
           else:
               lines.append('#### flutter test \u2014 raw tail')

@@ -12,13 +12,29 @@ import 'package:vipmind/features/splash/splash_screen.dart';
 /// left in the tree with a pending timer fails the test with "timer still
 /// pending", which is exactly what we want to notice.
 void main() {
-  /// Pumps the splash screen with stub routes for `/home` and `/login`, so the
-  /// test observes the navigation *decision* without building Firebase screens.
+  /// Routes for `/home` and `/login` as inert stubs.
+  ///
+  /// Two reasons this exists:
+  /// * without a generator for those names the splash navigation throws
+  ///   "Could not find a generator for route RouteSettings(\"/login\")";
+  /// * the real Home/Login screens touch Firebase, which is not initialised in a
+  ///   plain widget test.
+  Route<dynamic> stubRoutes(RouteSettings settings) {
+    return MaterialPageRoute<void>(
+      settings: settings,
+      builder: (_) => Scaffold(body: Text('stub:${settings.name}')),
+    );
+  }
+
+  /// Pumps the splash screen and returns the route names it navigated to.
+  ///
+  /// Uses `pump(duration)` rather than `pumpAndSettle`: the splash loading
+  /// indicator repeats forever, so `pumpAndSettle` can only ever time out while
+  /// the splash is still on screen.
   Future<List<String>> pumpSplash(
     WidgetTester tester, {
     required bool signedIn,
     Duration delay = Duration.zero,
-    Duration settle = const Duration(seconds: 5),
   }) async {
     final visited = <String>[];
 
@@ -28,10 +44,7 @@ void main() {
           case AppRoutes.home:
           case AppRoutes.login:
             visited.add(settings.name!);
-            return MaterialPageRoute<void>(
-              settings: settings,
-              builder: (_) => Scaffold(body: Text('stub:${settings.name}')),
-            );
+            return stubRoutes(settings);
           default:
             return MaterialPageRoute<void>(
               settings: settings,
@@ -44,17 +57,28 @@ void main() {
       },
     ));
 
-    await tester.pumpAndSettle(settle);
+    // Past the navigation delay, plus the push transition.
+    await tester.pump(delay + const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 500));
     return visited;
   }
 
   testWidgets('shows the VipMind branding while it is on screen',
       (tester) async {
+    const delay = Duration(seconds: 3);
+
     await tester.pumpWidget(MaterialApp(
-      home: SplashScreen(
-        signedInCheck: () => false,
-        navigationDelay: const Duration(seconds: 3),
-      ),
+      onGenerateRoute: (settings) {
+        if (settings.name == AppRoutes.login) return stubRoutes(settings);
+        return MaterialPageRoute<void>(
+          settings: settings,
+          builder: (_) => SplashScreen(
+            signedInCheck: () => false,
+            navigationDelay: delay,
+          ),
+        );
+      },
     ));
 
     // First frame: branding is up, navigation has not happened yet.
@@ -65,8 +89,11 @@ void main() {
     expect(find.byIcon(Icons.psychology_rounded), findsOneWidget);
     expect(find.byType(SplashScreen), findsOneWidget);
 
-    // Let the timer run out so no timer is left pending at teardown.
-    await tester.pumpAndSettle(const Duration(seconds: 5));
+    // Let the timer fire and the splash be disposed, so no timer is left
+    // pending at teardown.
+    await tester.pump(delay + const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 500));
     expect(find.byType(SplashScreen), findsNothing);
   });
 
@@ -87,17 +114,25 @@ void main() {
   testWidgets('it does not navigate before the delay has elapsed',
       (tester) async {
     await tester.pumpWidget(MaterialApp(
-      home: SplashScreen(
-        signedInCheck: () => false,
-        navigationDelay: const Duration(seconds: 3),
-      ),
+      onGenerateRoute: (settings) {
+        if (settings.name == AppRoutes.login) return stubRoutes(settings);
+        return MaterialPageRoute<void>(
+          settings: settings,
+          builder: (_) => SplashScreen(
+            signedInCheck: () => false,
+            navigationDelay: const Duration(seconds: 3),
+          ),
+        );
+      },
     ));
 
     await tester.pump(const Duration(seconds: 2));
     expect(find.byType(SplashScreen), findsOneWidget,
         reason: 'navigated before the branding delay was over');
 
-    await tester.pumpAndSettle(const Duration(seconds: 5));
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 500));
     expect(find.byType(SplashScreen), findsNothing);
   });
 

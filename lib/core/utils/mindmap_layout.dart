@@ -151,8 +151,12 @@ class MindmapLayoutEngine {
     );
   }
 
-  /// Lays out the subtree of [parentId] and returns the bottom edge (in Y)
-  /// used by that subtree, so the caller can place the next sibling below it.
+  /// Lays out the subtree of [parentId] and returns the Y at which the NEXT
+  /// sibling of that subtree may be placed — i.e. the subtree's bottom edge plus
+  /// [treeVerticalSpacing], or just the node's own bottom edge for a leaf.
+  ///
+  /// Returning the cursor (rather than a bare bottom edge) is what makes the gap
+  /// between two siblings independent of whether the first one has children.
   static double _layoutChildrenAsTree(
     Map<String, NodeModel> nodes,
     String parentId,
@@ -161,10 +165,11 @@ class MindmapLayoutEngine {
   ) {
     final parent = nodes[parentId];
     if (parent == null) return startY;
-    if (parent.childrenIds.isEmpty) return startY + parent.size.height;
+    if (parent.childrenIds.isEmpty) {
+      return startY + parent.size.height + treeVerticalSpacing;
+    }
 
     var currentY = startY;
-    var bottom = startY;
 
     for (final childId in parent.childrenIds) {
       final child = nodes[childId];
@@ -172,18 +177,15 @@ class MindmapLayoutEngine {
 
       nodes[childId] = child.copyWith(position: Offset(startX, currentY));
 
-      final subtreeBottom = _layoutChildrenAsTree(
+      currentY = _layoutChildrenAsTree(
         nodes,
         childId,
         startX + treeHorizontalSpacing,
         currentY,
       );
-
-      bottom = math.max(bottom, subtreeBottom);
-      currentY = subtreeBottom + treeVerticalSpacing;
     }
 
-    return bottom;
+    return currentY;
   }
 
   // ------------------------------------------------------------- org chart
