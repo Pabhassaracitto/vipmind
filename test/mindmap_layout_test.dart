@@ -190,19 +190,20 @@ void main() {
       // Printed because two attempts at this assertion failed with numbers that
       // did not match either version of the engine; the geometry is cheap to log
       // and ends the guessing.
-      debugPrint('TREEGAP subtree: ' +
-          ['root', 'a', 'a1', 'b', 'c']
-              .map((id) => '$id=${withSubtree[id]?.position.dy}'
-                  '(${withSubtree[id]?.size.height})')
-              .join(' '));
-      debugPrint('TREEGAP flat: ' +
-          ['root', 'a', 'b', 'c']
-              .map((id) =>
-                  '$id=${flat[id]?.position.dy}(${flat[id]?.size.height})')
-              .join(' ') +
-          ' | gapSubtree=$gapAfterSubtree gapLeaf=$gapAfterLeaf'
-          ' leafBottom=$leafBottom'
-          ' spacing=${MindmapLayoutEngine.treeVerticalSpacing}');
+      String dump(Map<String, NodeModel> nodes, List<String> ids) => ids
+          .map((id) => '$id=${nodes[id]?.position.dy}(${nodes[id]?.size.height})')
+          .join(' ');
+      debugPrint('TREEGAP subtree: ${dump(withSubtree, const [
+        'root',
+        'a',
+        'a1',
+        'b',
+        'c'
+      ])}');
+      debugPrint('TREEGAP flat: ${dump(flat, const ['root', 'a', 'b', 'c'])} '
+          '| gapSubtree=$gapAfterSubtree gapLeaf=$gapAfterLeaf '
+          'leafBottom=$leafBottom '
+          'spacing=${MindmapLayoutEngine.treeVerticalSpacing}');
 
       expect(gapAfterLeaf, closeTo(gapAfterSubtree, 0.001),
           reason: 'the gap must not depend on whether the sibling has children');
