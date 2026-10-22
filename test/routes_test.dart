@@ -143,9 +143,9 @@ void main() {
             ChangeNotifierProvider<MindmapProvider>.value(
                 value: mindmapProvider),
           ],
-          child: MaterialApp(
+          child: const MaterialApp(
             onGenerateRoute: AppRoutes.generateRoute,
-            home: const Scaffold(body: Text('test-host')),
+            home: Scaffold(body: Text('test-host')),
           ),
         ),
       );
@@ -232,9 +232,9 @@ void main() {
     });
 
     testWidgets('unknown route screen offers a way home', (tester) async {
-      await tester.pumpWidget(MaterialApp(
+      await tester.pumpWidget(const MaterialApp(
         onGenerateRoute: AppRoutes.generateRoute,
-        home: const Scaffold(body: Text('test-host')),
+        home: Scaffold(body: Text('test-host')),
       ));
       // pushNamed, not initialRoute: a deep initialRoute also builds '/' (the
       // SplashScreen) and leaves its navigation timer pending.
