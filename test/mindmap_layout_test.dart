@@ -225,8 +225,11 @@ void main() {
       final gap2 = centres[2] - centres[1];
       expect(gap1, closeTo(MindmapLayoutEngine.orgHorizontalSpacing, 0.001));
       expect(gap2, closeTo(MindmapLayoutEngine.orgHorizontalSpacing, 0.001));
-      // 180 spacing with 160-wide nodes → 20px of breathing room.
-      expect(gap1, greaterThan(nodes['a']!.size.width));
+      // Centres are 180 apart while nodes are 160 wide, so siblings get 20px of
+      // breathing room instead of overlapping.
+      expect(gap1 - nodes['a']!.size.width,
+          closeTo(MindmapLayoutEngine.orgHorizontalSpacing - 160, 0.001));
+      expect(gap1, greaterThan(nodes['a']!.size.width * 0.9));
     });
   });
 

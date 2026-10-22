@@ -25,7 +25,8 @@ void main() {
     test('dates accept Timestamp, ISO string, millis and null', () {
       final date = DateTime.utc(2026, 10, 22, 8, 30);
 
-      expect(firestoreDate(Timestamp.fromDate(date)), date);
+      // Timestamp.toDate() returns a LOCAL DateTime for the same instant.
+      expect(firestoreDate(Timestamp.fromDate(date))!.toUtc(), date);
       expect(firestoreDate(date.toIso8601String()), date);
       expect(firestoreDate(date.millisecondsSinceEpoch), date);
       expect(firestoreDate(null), isNull);
@@ -59,7 +60,7 @@ void main() {
     });
 
     test('enums fall back instead of throwing on bad indexes', () {
-      expect(firestoreEnum(1, NodeShape.values), NodeShape.ellipse);
+      expect(firestoreEnum(2, NodeShape.values), NodeShape.ellipse);
       expect(firestoreEnum(99, NodeShape.values, fallback: NodeShape.diamond),
           NodeShape.diamond);
       expect(firestoreEnum(null, NodeType.values, fallback: NodeType.task),
@@ -146,10 +147,11 @@ void main() {
       expect(node.shape, NodeShape.rectangle);
       expect(node.type, NodeType.note);
       expect(node.childrenIds, ['a', 'b']);
-      expect(node.createdAt, DateTime.utc(2026, 1, 28));
-      expect(node.updatedAt, DateTime.utc(2026, 10, 22));
+      expect(node.createdAt.toUtc(), DateTime.utc(2026, 1, 28));
+      expect(node.updatedAt.toUtc(), DateTime.utc(2026, 10, 22));
       expect(node.audioNote, isNotNull);
       expect(node.audioNote!.duration, const Duration(milliseconds: 1500));
+      expect(node.audioNote!.createdAt.toUtc(), DateTime.utc(2026, 5, 5));
     });
 
     test('toJson output is JSON-encodable (Firestore requirement)', () {
@@ -202,14 +204,16 @@ void main() {
       });
 
       expect(map.title, 'Saved map');
-      expect(map.createdAt, DateTime.utc(2026, 2, 1));
-      expect(map.updatedAt, DateTime.utc(2026, 2, 2));
+      expect(map.createdAt.toUtc(), DateTime.utc(2026, 2, 1));
+      expect(map.updatedAt.toUtc(), DateTime.utc(2026, 2, 2));
       expect(map.layout, MindmapLayout.orgChart);
       expect(map.style, MindmapStyle.colorful);
       expect(map.isFavorite, isTrue);
       expect(map.collaboratorIds, ['user-2']);
       expect(map.tags, ['study']);
-      expect(map.nodes.keys, ['root']);
+      // Map key order is an implementation detail, not a contract.
+      expect(map.nodes.keys, contains('root'));
+      expect(map.nodes, hasLength(1));
       expect(map.rootNode?.text, 'Root');
       expect(map.connections.single.strokeWidth, 3.0);
       expect(map.connections.single.color.toARGB32(), 0xFF06D6A0);
@@ -318,7 +322,7 @@ void main() {
 
       expect(user.stats['maps'], 4);
       expect(user.stats['nodes'], 120);
-      expect(user.createdAt, DateTime.utc(2026, 3, 3));
+      expect(user.createdAt.toUtc(), DateTime.utc(2026, 3, 3));
       expect(user.settings, isEmpty);
     });
 
