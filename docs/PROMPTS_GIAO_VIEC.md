@@ -11,9 +11,18 @@ này. Mỗi prompt tương ứng một card Linear.
 | 3 | Anki/Flashcard UI *(mũi nhọn B — không cần quyết định bên ngoài)* | [IN4-136](https://linear.app/in4up/issue/IN4-136) | Không |
 | 4 | Export PNG/PDF + Share *(mũi nhọn A — cần chủ dự án duyệt)* | [IN4-135](https://linear.app/in4up/issue/IN4-135) | Quyết định của chủ dự án |
 
-> **Thứ tự bắt buộc:** prompt 1 trước. Ba prompt còn lại chỉ có nghĩa khi
-> `flutter analyze` + `flutter test` đã xanh — vì hiện tại **chưa một lần compile
-> thật** nào xác nhận code đang có trên nhánh là đúng.
+> **Cập nhật 23/10/2026 — prompt 1 đã chạy xong một phần, trên CI thật:**
+> `flutter pub get` ✅ · `flutter analyze` ✅ **No issues found!** · `flutter test` ✅
+> **All tests passed (108)**. Run:
+> <https://github.com/Pabhassaracitto/vipmind/actions/runs/39871205285> ·
+> PR: <https://github.com/Pabhassaracitto/vipmind/pull/1>
+>
+> Phần **chưa** làm được vì cần thứ CI không có: `flutter build apk`, nghiệm thu
+> trên thiết bị, `dart format .`, và commit `pubspec.lock` (CI đã sinh ra nó và để
+> trong artifact `analyze-test-output`). Đó là nội dung prompt 1 bên dưới.
+>
+> Ba prompt sau chỉ nên giao khi prompt 1 xong hẳn: test xanh mới chứng minh được
+> tầng logic, chưa chứng minh được app chạy trên máy thật.
 
 ---
 
@@ -40,31 +49,49 @@ thêm 8 file test, thêm CI analyze+test.
 CHƯA AI CHẠY: flutter pub get / analyze / test / build. pubspec.lock đã bị XOÁ
 có chủ đích vì không resolve được với bộ dependency mới.
 
-VIỆC CẦN LÀM, theo thứ tự, mỗi bước dán output thật vào báo cáo:
-1. `flutter --version` — ghi lại. Code dùng `Color.withValues(alpha:)` nên cần
-   Flutter >= 3.27. Nếu SDK cũ hơn: ĐỪNG hạ code về withOpacity (57 chỗ), hãy báo
-   lại để nâng SDK.
-2. `flutter pub get` — nếu xung đột version, nới caret constraint trong
-   pubspec.yaml. TUYỆT ĐỐI KHÔNG thêm lại package đã bị cắt (danh sách 29 package
-   nằm trong comment cuối pubspec.yaml). Commit pubspec.lock mới.
-3. `flutter analyze` — sửa hết ERROR. Warning/info: sửa nếu rẻ, nếu không thì
-   LIỆT KÊ đầy đủ trong báo cáo, không im lặng bỏ qua.
-4. `flutter test` — phải xanh. Nếu một test đỏ:
+ĐÃ XONG TRÊN CI (đừng làm lại, chỉ xác nhận trên máy dev):
+- `flutter pub get` resolve sạch với 10 package runtime.
+- `flutter analyze` → "No issues found!" (0 error / 0 warning / 0 info).
+- `flutter test` → "All tests passed!" (108 test).
+CI tự đăng toàn bộ kết quả thành comment trên PR #1 mỗi lần chạy.
+
+VIỆC CÒN LẠI, theo thứ tự, mỗi bước dán output thật vào báo cáo:
+1. `flutter --version` — ghi lại và đối chiếu với pin `3.35.0` trong
+   `.github/workflows/ci.yml`. Nếu máy dev khác bản đó thì nói rõ: kết quả
+   `dart format` phụ thuộc phiên bản Dart, lệch nhau là CI đỏ.
+2. `flutter pub get` rồi **commit `pubspec.lock`** (repo đang không có lockfile;
+   CI sinh ra nó và để trong artifact `analyze-test-output`).
+3. `flutter analyze` + `flutter test` — xác nhận xanh trên máy dev, không chỉ trên CI.
+4. `dart format .` → commit → bỏ `continue-on-error: true` ở bước
+   *Formatting check* trong `.github/workflows/ci.yml` (card IN4-131).
+5. `flutter build apk --debug` — phép thử thật cho applicationId `com.vipmind`
+   khớp `package_name` trong google-services.json, và cho plugin google-services.
+   Nếu fail vì google-services: KHÔNG xoá plugin, hãy đối chiếu lại applicationId.
+6. Chạy trên máy/emulator và đi hết luồng trong checklist của card IN4-130.
+   Ba mục quan trọng nhất, đều là bug vừa sửa và CHỈ kiểm chứng được trên máy thật:
+   - tạo mindmap → thoát app → mở lại → **map mở được**
+     (bug `FieldValue.serverTimestamp()` / `DateTime.parse()`: trước khi sửa thì
+     mọi map đã lưu đều mất trắng);
+   - **xoá một node CÓ node con** (trước commit `485b928` là
+     `ConcurrentModificationError` → crash);
+   - **đổi tên mindmap rồi bấm Save** (trước đây nút Save là code chết).
+
+NẾU CÓ TEST ĐỎ (tham khảo, CI đang xanh):
    - Test sai thật (assert sai giá trị mong đợi) → sửa test, giải thích tại sao.
    - Code sai → sửa code. KHÔNG được xoá test hay nới assertion cho dễ qua.
    - `test/models_firestore_types_test.dart` dùng `Timestamp.fromDate()` của
      cloud_firestore trên VM thuần; nếu nó cần native library thì thay fixture đó
      bằng ISO string/millis và ghi chú lại (các nhánh khác của converter vẫn phải
      được test).
-5. `dart format .` rồi đổi bước "Formatting check" trong .github/workflows/ci.yml
-   từ `continue-on-error: true` thành blocking.
-6. `flutter build apk --debug` — đây là phép thử thật cho applicationId
-   `com.vipmind` khớp `package_name` trong android/app/google-services.json, và
-   cho plugin google-services. Nếu fail vì google-services: KHÔNG xoá plugin,
-   hãy đối chiếu lại applicationId.
-7. Chạy trên máy/emulator và đi hết luồng trong checklist của card IN4-130.
-   Quan trọng nhất: tạo mindmap → thoát app → mở lại → MAP PHẢI MỞ ĐƯỢC
-   (đây là phép thử cho bug Timestamp; trước khi sửa thì map đã lưu mất trắng).
+HAI CÁI BẪY FLUTTER TEST ĐÃ TỐN NHIỀU VÒNG CI (đã ghi trong docs/AGENT_NOTES.md):
+- `MaterialApp(initialRoute: '/anki')` KHÔNG CHỈ dựng `/anki`: Flutter tách route
+  sâu thành từng đoạn và dựng cả route `/` — ở app này là SplashScreen, và timer
+  3 giây của nó làm test fail với "A Timer is still pending even after the widget
+  tree was disposed". Test phải pump với `home:` rồi điều hướng bằng
+  `Navigator.pushNamed`.
+- `Timestamp.toDate()` trả DateTime **múi giờ local** cho cùng một thời điểm, và
+  so sánh DateTime của Dart nhạy với múi giờ. Test phải so
+  `millisecondsSinceEpoch`. `firestoreDate()` nay chuẩn hoá mọi nhánh về UTC.
 
 RÀNG BUỘC CỨNG:
 - Không đổi danh tính (tên/package id) — vừa mất công thống nhất.
