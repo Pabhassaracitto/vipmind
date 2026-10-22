@@ -115,21 +115,21 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           exit $code
 
-      # `--reporter github` makes flutter_test emit `::error title=...
-      # file=...,line=...` workflow commands itself, so failures are attributed
-      # to the right file instead of to the workflow. The full output is also
-      # posted as a PR comment by the next step, because the check-run
-      # annotations API caps failure annotations at 10 and the raw job log lives
-      # on a blob host that tooling often cannot reach.
+      # The expanded reporter writes "path: group test name [E]" followed by the
+      # expectation block, so one pass gives both the failing test names and the
+      # reason. The whole output is mirrored into the PR comment by the next
+      # step: the check-run annotations API caps failure annotations at 10, and
+      # both the job log and uploaded artifacts are served from blob hosts that
+      # tooling often cannot reach.
       - name: Test (blocking)
         run: |
           set +e
-          flutter test --no-pub --reporter github 2>&1 | tee test.txt
+          flutter test --no-pub --reporter expanded 2>&1 | tee test.txt
           code=${PIPESTATUS[0]}
           {
             echo "## flutter test (exit $code)"
             echo '```'
-            cat test.txt
+            tail -n 400 test.txt
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
           exit $code
@@ -144,29 +144,27 @@ jobs:
           marker="<!-- vipmind-ci-report -->"
           {
             echo "$marker"
-            echo "### CI report — commit ${GITHUB_SHA:0:7}"
+            echo "### CI report - commit ${GITHUB_SHA:0:7}"
             echo
             if [ -f analyze.txt ]; then
               echo "#### flutter analyze"
               echo '```'
-              tail -n 120 analyze.txt
+              tail -n 100 analyze.txt
               echo '```'
             fi
             if [ -f test.txt ]; then
-              passed=$(grep -c "^✅" test.txt || true)
-              failed=$(grep -c "^❌" test.txt || true)
-              echo "#### flutter test — $passed passed, $failed failed"
+              echo "#### flutter test - failing tests"
               echo '```'
-              # A failure with the github reporter is "❌ path: name (failed)"
-              # followed by its exception block, so keep 24 lines after each
-              # marker. No `tail` cap: a cap is what hid 13 of 15 failures here.
-              grep -A 24 "^❌" test.txt | head -n 1400
+              grep -E "\[E\]$|Some tests failed|All tests passed|^[0-9]{2}:[0-9]{2} \+[0-9]+ -[0-9]+:" test.txt | tail -n 60
               echo '```'
+              echo "#### flutter test - full output (last 1100 lines)"
+              echo '```'
+              tail -n 1100 test.txt
               echo '```'
             fi
           } > ci-report.md
           if [ -n "$PR_NUMBER" ]; then
-            existing=$(gh api "repos/$GH_REPO/issues/$PR_NUMBER/comments" --paginate --jq ".[] | select(.body | startswith("$marker")) | .id" | head -1)
+            existing=$(gh api "repos/$GH_REPO/issues/$PR_NUMBER/comments" --paginate --jq ".[] | select(.body | startswith(\"$marker\")) | .id" | head -1)
             if [ -n "$existing" ]; then
               gh api -X PATCH "repos/$GH_REPO/issues/comments/$existing" -F body=@ci-report.md >/dev/null \
                 || gh pr comment "$PR_NUMBER" --body-file ci-report.md
