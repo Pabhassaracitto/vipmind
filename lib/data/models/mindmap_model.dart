@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';  // Thêm dòng này
 import 'package:uuid/uuid.dart';
 import 'node_model.dart';
 import '../../core/utils/firestore_converters.dart';
@@ -229,6 +228,27 @@ class MindmapModel {
       updatedAt: firestoreDateOr(json['updatedAt'], DateTime.now()),
       settings: json['settings'] == null ? null : firestoreMap(json['settings']),
       tags: firestoreStringList(json['tags']),
+    );
+  }
+
+  /// Creates an empty map containing a single root node.
+  factory MindmapModel.createNew({
+    required String title,
+    required String ownerId,
+    String rootText = 'Central Idea',
+  }) {
+    final rootNode = NodeModel(
+      text: rootText,
+      position: const Offset(400, 300),
+      size: const Size(180, 80),
+      depth: 0,
+    );
+
+    return MindmapModel(
+      title: title,
+      ownerId: ownerId,
+      nodes: {rootNode.id: rootNode},
+      rootNodeId: rootNode.id,
     );
   }
 }

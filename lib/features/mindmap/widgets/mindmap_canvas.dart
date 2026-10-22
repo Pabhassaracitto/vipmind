@@ -44,7 +44,6 @@ class _MindmapCanvasState extends State<MindmapCanvas>
   Offset? _lastFocalPoint;
   double? _lastScale;
   String? _draggingNodeId;
-  Offset? _dragStartPosition;
 
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;

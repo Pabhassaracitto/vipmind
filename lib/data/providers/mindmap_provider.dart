@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import '../models/mindmap_model.dart';
 import '../models/node_model.dart';
@@ -93,6 +95,41 @@ class MindmapProvider extends ChangeNotifier {
       _error = e.toString();
       notifyListeners();
       return null;
+    }
+  }
+
+  /// Renames a map in the list and persists it.
+  ///
+  /// The editor's rename dialog used to build an `updated` copy and then
+  /// reference `updateNode` without calling it, so pressing Save did nothing at
+  /// all. `MindmapModel.title` is mutable and the list holds the same instance,
+  /// so setting it + saving is enough.
+  Future<void> renameTitle(String mindmapId, String newTitle) async {
+    final trimmed = newTitle.trim();
+    if (trimmed.isEmpty) return;
+
+    MindmapModel? target;
+    if (_currentMindmap?.id == mindmapId) {
+      target = _currentMindmap;
+    } else {
+      for (final map in _mindmaps) {
+        if (map.id == mindmapId) {
+          target = map;
+          break;
+        }
+      }
+    }
+    if (target == null) return;
+
+    _saveState();
+    target.title = trimmed;
+    notifyListeners();
+
+    try {
+      await _repository.updateTitle(mindmapId, trimmed);
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
     }
   }
 
@@ -192,12 +229,13 @@ class MindmapProvider extends ChangeNotifier {
       nodePosition = position;
     } else if (parent != null) {
       // Position relative to parent
+      // Spread children on a 45° fan around the parent.
       final childCount = parent.childrenIds.length;
-      final angle = (childCount * 45) * (3.14159 / 180);
+      final angle = math.pi / 4 * childCount;
       const distance = 200.0;
       nodePosition = Offset(
-        parent.center.dx + distance * cos(angle),
-        parent.center.dy + distance * sin(angle),
+        parent.center.dx + distance * math.cos(angle),
+        parent.center.dy + distance * math.sin(angle),
       );
     } else {
       nodePosition = const Offset(400, 300);

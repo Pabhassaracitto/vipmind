@@ -85,7 +85,7 @@ void main() {
     test('zenMode',
         () => expect(buildPageFor(AppRoutes.zenMode), isA<ZenModeScreen>()));
     test('settings',
-        () => expect(buildPageFor(AppRoutes.settings), isA<SettingsScreen>()));
+        () => expect(buildPageFor(AppRoutes.settingsRoute), isA<SettingsScreen>()));
   });
 
   test('route constants are unique (a duplicate would shadow a screen)', () {
@@ -104,7 +104,7 @@ void main() {
       AppRoutes.ankiDeck,
       AppRoutes.flashcardReview,
       AppRoutes.zenMode,
-      AppRoutes.settings,
+      AppRoutes.settingsRoute,
     ];
     expect(names.toSet().length, names.length);
     expect(names.length, 15);
@@ -178,7 +178,7 @@ void main() {
 
     testWidgets('settings shows theme, sound and focus controls',
         (tester) async {
-      await pumpRoute(tester, AppRoutes.settings);
+      await pumpRoute(tester, AppRoutes.settingsRoute);
 
       expect(find.text('Theme'), findsOneWidget);
       expect(find.text('Follow system'), findsOneWidget);
@@ -191,7 +191,7 @@ void main() {
       final audioProvider = AudioProvider();
       expect(audioProvider.isSoundEnabled, isTrue);
 
-      await pumpRoute(tester, AppRoutes.settings);
+      await pumpRoute(tester, AppRoutes.settingsRoute);
       await tester.tap(find.byType(SwitchListTile));
       await tester.pumpAndSettle();
 
