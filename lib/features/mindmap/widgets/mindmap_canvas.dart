@@ -44,7 +44,6 @@ class _MindmapCanvasState extends State<MindmapCanvas>
   Offset? _lastFocalPoint;
   double? _lastScale;
   String? _draggingNodeId;
-  Offset? _dragStartPosition;
 
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
@@ -161,7 +160,7 @@ class _MindmapCanvasState extends State<MindmapCanvas>
       painter: _GridPainter(
         offset: widget.canvasOffset,
         scale: widget.canvasScale,
-        color: AppColors.textSecondary.withOpacity(0.05),
+        color: AppColors.textSecondary.withValues(alpha: 0.05),
       ),
     );
   }
@@ -183,7 +182,6 @@ class _MindmapCanvasState extends State<MindmapCanvas>
           onPanStart: (details) {
             setState(() {
               _draggingNodeId = node.id;
-              _dragStartPosition = node.position;
             });
           },
           onPanUpdate: (details) {
@@ -195,7 +193,6 @@ class _MindmapCanvasState extends State<MindmapCanvas>
           onPanEnd: (details) {
             setState(() {
               _draggingNodeId = null;
-              _dragStartPosition = null;
             });
           },
           child: NodeWidget(
@@ -226,7 +223,7 @@ class _MindmapCanvasState extends State<MindmapCanvas>
                     gradient: AppColors.primaryGradient,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primaryBlue.withOpacity(0.3),
+                        color: AppColors.primaryBlue.withValues(alpha: 0.3),
                         blurRadius: 40,
                         spreadRadius: 10,
                       ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'app_fonts.dart';
 
 import 'app_colors.dart';
 
@@ -54,48 +54,48 @@ class AppTheme {
 
   // Text Theme
   static TextTheme get _textTheme {
-    return GoogleFonts.interTextTheme().copyWith(
-      displayLarge: GoogleFonts.inter(
+    return AppFonts.textTheme(ThemeData.light().textTheme).copyWith(
+      displayLarge: AppFonts.inter(
         fontSize: 32,
         fontWeight: FontWeight.bold,
         color: AppColors.textPrimary,
       ),
-      displayMedium: GoogleFonts.inter(
+      displayMedium: AppFonts.inter(
         fontSize: 28,
         fontWeight: FontWeight.bold,
         color: AppColors.textPrimary,
       ),
-      displaySmall: GoogleFonts.inter(
+      displaySmall: AppFonts.inter(
         fontSize: 24,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
       ),
-      headlineMedium: GoogleFonts.inter(
+      headlineMedium: AppFonts.inter(
         fontSize: 20,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
       ),
-      titleLarge: GoogleFonts.inter(
+      titleLarge: AppFonts.inter(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
       ),
-      titleMedium: GoogleFonts.inter(
+      titleMedium: AppFonts.inter(
         fontSize: 16,
         fontWeight: FontWeight.w500,
         color: AppColors.textPrimary,
       ),
-      bodyLarge: GoogleFonts.inter(
+      bodyLarge: AppFonts.inter(
         fontSize: 16,
         fontWeight: FontWeight.normal,
         color: AppColors.textSecondary,
       ),
-      bodyMedium: GoogleFonts.inter(
+      bodyMedium: AppFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.normal,
         color: AppColors.textSecondary,
       ),
-      labelLarge: GoogleFonts.inter(
+      labelLarge: AppFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: AppColors.textPrimary,
@@ -104,48 +104,48 @@ class AppTheme {
   }
 
   static TextTheme get _textThemeDark {
-    return GoogleFonts.interTextTheme().copyWith(
-      displayLarge: GoogleFonts.inter(
+    return AppFonts.textTheme(ThemeData.light().textTheme).copyWith(
+      displayLarge: AppFonts.inter(
         fontSize: 32,
         fontWeight: FontWeight.bold,
         color: AppColors.textLight,
       ),
-      displayMedium: GoogleFonts.inter(
+      displayMedium: AppFonts.inter(
         fontSize: 28,
         fontWeight: FontWeight.bold,
         color: AppColors.textLight,
       ),
-      displaySmall: GoogleFonts.inter(
+      displaySmall: AppFonts.inter(
         fontSize: 24,
         fontWeight: FontWeight.w600,
         color: AppColors.textLight,
       ),
-      headlineMedium: GoogleFonts.inter(
+      headlineMedium: AppFonts.inter(
         fontSize: 20,
         fontWeight: FontWeight.w600,
         color: AppColors.textLight,
       ),
-      titleLarge: GoogleFonts.inter(
+      titleLarge: AppFonts.inter(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: AppColors.textLight,
       ),
-      titleMedium: GoogleFonts.inter(
+      titleMedium: AppFonts.inter(
         fontSize: 16,
         fontWeight: FontWeight.w500,
         color: AppColors.textLight,
       ),
-      bodyLarge: GoogleFonts.inter(
+      bodyLarge: AppFonts.inter(
         fontSize: 16,
         fontWeight: FontWeight.normal,
         color: AppColors.textLightSecondary,
       ),
-      bodyMedium: GoogleFonts.inter(
+      bodyMedium: AppFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.normal,
         color: AppColors.textLightSecondary,
       ),
-      labelLarge: GoogleFonts.inter(
+      labelLarge: AppFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: AppColors.textLight,
@@ -160,7 +160,7 @@ class AppTheme {
       centerTitle: true,
       backgroundColor: AppColors.backgroundLight,
       foregroundColor: AppColors.textPrimary,
-      titleTextStyle: GoogleFonts.inter(
+      titleTextStyle: AppFonts.inter(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
@@ -174,7 +174,7 @@ class AppTheme {
       centerTitle: true,
       backgroundColor: AppColors.backgroundDark,
       foregroundColor: AppColors.textLight,
-      titleTextStyle: GoogleFonts.inter(
+      titleTextStyle: AppFonts.inter(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: AppColors.textLight,
@@ -214,7 +214,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        textStyle: GoogleFonts.inter(
+        textStyle: AppFonts.inter(
           fontSize: 16,
           fontWeight: FontWeight.w600,
         ),
@@ -253,7 +253,7 @@ class AppTheme {
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: AppColors.errorRed),
       ),
-      hintStyle: GoogleFonts.inter(
+      hintStyle: AppFonts.inter(
         color: AppColors.textSecondary,
         fontSize: 14,
       ),
@@ -277,7 +277,7 @@ class AppTheme {
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2),
       ),
-      hintStyle: GoogleFonts.inter(
+      hintStyle: AppFonts.inter(
         color: AppColors.textLightSecondary,
         fontSize: 14,
       ),

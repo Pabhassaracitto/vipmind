@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../../../app/routes.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../data/providers/mindmap_provider.dart';
-import '../../../data/providers/audio_provider.dart';
 import '../../../data/models/node_model.dart';
 import '../../../data/models/mindmap_model.dart';
 import '../../../core/services/haptic_service.dart';
@@ -119,17 +118,6 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
   Future<void> _loadMindmap() async {
     if (widget.mindmapId != null) {
       await context.read<MindmapProvider>().loadMindmap(widget.mindmapId!);
-    }
-  }
-
-  void _togglePanel() {
-    setState(() {
-      _isPanelOpen = !_isPanelOpen;
-    });
-    if (_isPanelOpen) {
-      _panelController.forward();
-    } else {
-      _panelController.reverse();
     }
   }
 
@@ -388,7 +376,7 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
             end: Alignment.bottomCenter,
             colors: [
               Theme.of(context).scaffoldBackgroundColor,
-              Theme.of(context).scaffoldBackgroundColor.withOpacity(0),
+              Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0),
             ],
           ),
         ),
@@ -407,7 +395,7 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 8,
                     ),
                   ],
@@ -430,7 +418,7 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 8,
                       ),
                     ],
@@ -573,10 +561,14 @@ class _MindmapEditorScreenState extends State<MindmapEditorScreen>
           ),
           ElevatedButton(
             onPressed: () {
-              if (controller.text.isNotEmpty) {
-                final updated = mindmap.copyWith(title: controller.text);
-                context.read<MindmapProvider>().updateNode;
-                Navigator.pop(context);
+              final newTitle = controller.text.trim();
+              Navigator.pop(context);
+              if (newTitle.isNotEmpty) {
+                // Was dead code: it built `updated`, then referenced
+                // `updateNode` without calling it, so Save did nothing.
+                context
+                    .read<MindmapProvider>()
+                    .renameTitle(mindmap.id, newTitle);
               }
             },
             child: const Text('Save'),
@@ -791,7 +783,7 @@ class _OptionTile extends StatelessWidget {
       title: Text(title,
           style: TextStyle(color: color, fontWeight: FontWeight.w500)),
       subtitle: Text(subtitle,
-          style: TextStyle(fontSize: 12, color: color?.withOpacity(0.7))),
+          style: TextStyle(fontSize: 12, color: color?.withValues(alpha: 0.7))),
       onTap: onTap,
     );
   }

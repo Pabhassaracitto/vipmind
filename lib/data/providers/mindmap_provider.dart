@@ -1,7 +1,10 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import '../models/mindmap_model.dart';
 import '../models/node_model.dart';
 import '../models/connection_model.dart';
+import '../../core/utils/mindmap_layout.dart';
 import '../repositories/mindmap_repository.dart';
 
 class MindmapProvider extends ChangeNotifier {
@@ -95,6 +98,59 @@ class MindmapProvider extends ChangeNotifier {
     }
   }
 
+  /// Renames a map in the list and persists it.
+  ///
+  /// The editor's rename dialog used to build an `updated` copy and then
+  /// reference `updateNode` without calling it, so pressing Save did nothing at
+  /// all. `MindmapModel.title` is mutable and the list holds the same instance,
+  /// so setting it + saving is enough.
+  Future<void> renameTitle(String mindmapId, String newTitle) async {
+    final trimmed = newTitle.trim();
+    if (trimmed.isEmpty) return;
+
+    MindmapModel? target;
+    if (_currentMindmap?.id == mindmapId) {
+      target = _currentMindmap;
+    } else {
+      for (final map in _mindmaps) {
+        if (map.id == mindmapId) {
+          target = map;
+          break;
+        }
+      }
+    }
+    if (target == null) return;
+
+    _saveState();
+    target.title = trimmed;
+    notifyListeners();
+
+    try {
+      await _repository.updateTitle(mindmapId, trimmed);
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
+  /// Inserts an already-built [MindmapModel] (e.g. created from a template),
+  /// persists it and makes it the current map.
+  Future<MindmapModel?> createMindmapFromModel(MindmapModel mindmap) async {
+    try {
+      await _repository.saveMindmap(mindmap);
+      _mindmaps.insert(0, mindmap);
+      _currentMindmap = mindmap;
+      _undoStack.clear();
+      _redoStack.clear();
+      notifyListeners();
+      return mindmap;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return null;
+    }
+  }
+
   // Save current mindmap
   Future<void> saveMindmap() async {
     if (_currentMindmap == null) return;
@@ -173,12 +229,13 @@ class MindmapProvider extends ChangeNotifier {
       nodePosition = position;
     } else if (parent != null) {
       // Position relative to parent
+      // Spread children on a 45° fan around the parent.
       final childCount = parent.childrenIds.length;
-      final angle = (childCount * 45) * (3.14159 / 180);
+      final angle = math.pi / 4 * childCount;
       const distance = 200.0;
       nodePosition = Offset(
-        parent.center.dx + distance * cos(angle),
-        parent.center.dy + distance * sin(angle),
+        parent.center.dx + distance * math.cos(angle),
+        parent.center.dy + distance * math.sin(angle),
       );
     } else {
       nodePosition = const Offset(400, 300);
@@ -292,180 +349,22 @@ class MindmapProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Apply layout algorithm
-  void _applyLayout() {
+  /// Re-runs the auto-layout of the current map (public: the editor toolbar
+  /// can call it after bulk edits).
+  void reapplyLayout() {
     if (_currentMindmap == null) return;
-
-    switch (_currentMindmap!.layout) {
-      case MindmapLayout.radial:
-        _applyRadialLayout();
-        break;
-      case MindmapLayout.tree:
-        _applyTreeLayout();
-        break;
-      case MindmapLayout.orgChart:
-        _applyOrgChartLayout();
-        break;
-      default:
-        break;
-    }
+    _saveState();
+    _applyLayout();
+    notifyListeners();
   }
 
-  void _applyRadialLayout() {
-    // Radial layout implementation
-    final root = _currentMindmap!.rootNode;
-    if (root == null) return;
-
-    const centerX = 500.0;
-    const centerY = 400.0;
-
-    _currentMindmap!.nodes[root.id] = root.copyWith(
-      position: const Offset(centerX - 90, centerY - 40),
-    );
-
-    _layoutChildrenRadially(root.id, centerX, centerY, 0, 360, 200);
-  }
-
-  void _layoutChildrenRadially(
-    String parentId,
-    double centerX,
-    double centerY,
-    double startAngle,
-    double endAngle,
-    double radius,
-  ) {
-    final parent = _currentMindmap!.nodes[parentId];
-    if (parent == null || parent.childrenIds.isEmpty) return;
-
-    final angleStep = (endAngle - startAngle) / parent.childrenIds.length;
-
-    for (var i = 0; i < parent.childrenIds.length; i++) {
-      final childId = parent.childrenIds[i];
-      final child = _currentMindmap!.nodes[childId];
-      if (child == null) continue;
-
-      final angle = (startAngle + angleStep * (i + 0.5)) * (3.14159 / 180);
-      final x = centerX + radius * cos(angle) - child.size.width / 2;
-      final y = centerY + radius * sin(angle) - child.size.height / 2;
-
-      _currentMindmap!.nodes[childId] = child.copyWith(
-        position: Offset(x, y),
-      );
-
-      // Recursively layout children
-      final childAngleSpan = angleStep * 0.8;
-      final childStartAngle = startAngle + angleStep * i + angleStep * 0.1;
-      _layoutChildrenRadially(
-        childId,
-        x + child.size.width / 2,
-        y + child.size.height / 2,
-        childStartAngle,
-        childStartAngle + childAngleSpan,
-        radius * 0.7,
-      );
-    }
-  }
-
-  void _applyTreeLayout() {
-    // Tree layout implementation
-    final root = _currentMindmap!.rootNode;
-    if (root == null) return;
-
-    const startX = 100.0;
-    const startY = 50.0;
-    const horizontalSpacing = 250.0;
-    const verticalSpacing = 100.0;
-
-    _currentMindmap!.nodes[root.id] = root.copyWith(
-      position: const Offset(startX, startY),
-    );
-
-    _layoutChildrenAsTree(
-      root.id,
-      startX + horizontalSpacing,
-      startY,
-      horizontalSpacing,
-      verticalSpacing,
-    );
-  }
-
-  double _layoutChildrenAsTree(
-    String parentId,
-    double startX,
-    double startY,
-    double horizontalSpacing,
-    double verticalSpacing,
-  ) {
-    final parent = _currentMindmap!.nodes[parentId];
-    if (parent == null || parent.childrenIds.isEmpty) return startY;
-
-    var currentY = startY;
-
-    for (final childId in parent.childrenIds) {
-      final child = _currentMindmap!.nodes[childId];
-      if (child == null) continue;
-
-      _currentMindmap!.nodes[childId] = child.copyWith(
-        position: Offset(startX, currentY),
-      );
-
-      final subtreeHeight = _layoutChildrenAsTree(
-        childId,
-        startX + horizontalSpacing,
-        currentY,
-        horizontalSpacing,
-        verticalSpacing,
-      );
-
-      currentY = subtreeHeight + verticalSpacing;
-    }
-
-    return currentY - verticalSpacing;
-  }
-
-  void _applyOrgChartLayout() {
-    // Org chart layout (top-down tree)
-    final root = _currentMindmap!.rootNode;
-    if (root == null) return;
-
-    const centerX = 500.0;
-    const startY = 50.0;
-    const verticalSpacing = 120.0;
-
-    _currentMindmap!.nodes[root.id] = root.copyWith(
-      position: Offset(centerX - root.size.width / 2, startY),
-    );
-
-    _layoutChildrenOrgChart(
-        root.id, centerX, startY + root.size.height + verticalSpacing);
-  }
-
-  void _layoutChildrenOrgChart(String parentId, double centerX, double y) {
-    final parent = _currentMindmap!.nodes[parentId];
-    if (parent == null || parent.childrenIds.isEmpty) return;
-
-    const horizontalSpacing = 180.0;
-    const verticalSpacing = 120.0;
-
-    final totalWidth = parent.childrenIds.length * horizontalSpacing;
-    var currentX = centerX - totalWidth / 2;
-
-    for (final childId in parent.childrenIds) {
-      final child = _currentMindmap!.nodes[childId];
-      if (child == null) continue;
-
-      _currentMindmap!.nodes[childId] = child.copyWith(
-        position: Offset(currentX, y),
-      );
-
-      _layoutChildrenOrgChart(
-        childId,
-        currentX + child.size.width / 2,
-        y + child.size.height + verticalSpacing,
-      );
-
-      currentX += horizontalSpacing;
-    }
+  // Apply layout algorithm.
+  // The algorithms themselves live in MindmapLayoutEngine (pure + unit tested);
+  // this provider only owns state, undo history and notifications.
+  void _applyLayout() {
+    final mindmap = _currentMindmap;
+    if (mindmap == null) return;
+    MindmapLayoutEngine.apply(mindmap.layout, mindmap.nodes, mindmap.rootNodeId);
   }
 
   // Helper to get next color
@@ -484,51 +383,4 @@ class MindmapProvider extends ChangeNotifier {
     return colors[nodeCount % colors.length];
   }
 
-  // Math helper
-  double cos(double radians) => _cos(radians);
-  double sin(double radians) => _sin(radians);
-
-  double _cos(double x) {
-    return _taylorCos(x);
-  }
-
-  double _sin(double x) {
-    return _taylorSin(x);
-  }
-
-  double _taylorCos(double x) {
-    // Normalize to [0, 2π]
-    while (x < 0) {
-      x += 2 * 3.14159265359;
-    }
-    while (x > 2 * 3.14159265359) {
-      x -= 2 * 3.14159265359;
-    }
-
-    double result = 1.0;
-    double term = 1.0;
-    for (int i = 1; i <= 10; i++) {
-      term *= -x * x / ((2 * i - 1) * (2 * i));
-      result += term;
-    }
-    return result;
-  }
-
-  double _taylorSin(double x) {
-    // Normalize to [0, 2π]
-    while (x < 0) {
-      x += 2 * 3.14159265359;
-    }
-    while (x > 2 * 3.14159265359) {
-      x -= 2 * 3.14159265359;
-    }
-
-    double result = x;
-    double term = x;
-    for (int i = 1; i <= 10; i++) {
-      term *= -x * x / ((2 * i) * (2 * i + 1));
-      result += term;
-    }
-    return result;
-  }
 }

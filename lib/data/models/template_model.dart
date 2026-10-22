@@ -1,6 +1,7 @@
 import 'package:uuid/uuid.dart';
 import 'mindmap_model.dart';
 import 'node_model.dart';
+import '../../core/utils/firestore_converters.dart';
 
 enum TemplateCategory {
   business,
@@ -96,6 +97,26 @@ class TemplateModel {
 
     final newRootId = idMapping[rootNodeId] ?? '';
 
+    // Third pass: recompute `depth` from the new root. `copyWith` alone would
+    // keep the template's depth values, and depth drives node styling in the
+    // editor — a flat map otherwise.
+    if (newRootId.isNotEmpty) {
+      final queue = <String>[newRootId];
+      final depths = <String, int>{newRootId: 0};
+      while (queue.isNotEmpty) {
+        final currentId = queue.removeAt(0);
+        final current = newNodes[currentId];
+        if (current == null) continue;
+        final currentDepth = depths[currentId] ?? 0;
+        newNodes[currentId] = current.copyWith(depth: currentDepth);
+        for (final childId in current.childrenIds) {
+          if (depths.containsKey(childId)) continue; // guard against cycles
+          depths[childId] = currentDepth + 1;
+          queue.add(childId);
+        }
+      }
+    }
+
     return MindmapModel(
       title: title,
       ownerId: ownerId,
@@ -131,30 +152,34 @@ class TemplateModel {
 
   factory TemplateModel.fromJson(Map<String, dynamic> json) {
     final nodesMap = <String, NodeModel>{};
-    if (json['nodes'] != null) {
-      (json['nodes'] as Map<String, dynamic>).forEach((key, value) {
-        nodesMap[key] = NodeModel.fromJson(value);
+    final rawNodes = json['nodes'];
+    if (rawNodes is Map) {
+      rawNodes.forEach((key, value) {
+        nodesMap[key.toString()] = NodeModel.fromJson(firestoreMap(value));
       });
     }
 
     return TemplateModel(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'],
-      thumbnailUrl: json['thumbnailUrl'],
-      category: TemplateCategory.values[json['category'] ?? 7],
+      id: json['id'] as String,
+      name: (json['name'] ?? 'Template') as String,
+      description: (json['description'] ?? '') as String,
+      thumbnailUrl: json['thumbnailUrl'] as String?,
+      category: firestoreEnum(json['category'], TemplateCategory.values,
+          fallback: TemplateCategory.custom),
       nodes: nodesMap,
-      rootNodeId: json['rootNodeId'] ?? '',
-      layout: MindmapLayout.values[json['layout'] ?? 0],
-      style: MindmapStyle.values[json['style'] ?? 0],
-      creatorId: json['creatorId'],
-      creatorName: json['creatorName'],
-      usageCount: json['usageCount'] ?? 0,
-      rating: (json['rating'] ?? 0).toDouble(),
-      isPremium: json['isPremium'] ?? false,
-      isOfficial: json['isOfficial'] ?? false,
-      createdAt: DateTime.parse(json['createdAt']),
-      tags: List<String>.from(json['tags'] ?? []),
+      rootNodeId: (json['rootNodeId'] ?? '') as String,
+      layout: firestoreEnum(json['layout'], MindmapLayout.values,
+          fallback: MindmapLayout.radial),
+      style: firestoreEnum(json['style'], MindmapStyle.values,
+          fallback: MindmapStyle.modern),
+      creatorId: (json['creatorId'] ?? 'system') as String,
+      creatorName: json['creatorName'] as String?,
+      usageCount: firestoreInt(json['usageCount']),
+      rating: firestoreDouble(json['rating']),
+      isPremium: (json['isPremium'] ?? false) as bool,
+      isOfficial: (json['isOfficial'] ?? false) as bool,
+      createdAt: firestoreDateOr(json['createdAt'], DateTime.now()),
+      tags: firestoreStringList(json['tags']),
     );
   }
 }

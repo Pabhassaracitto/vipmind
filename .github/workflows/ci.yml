@@ -1,0 +1,333 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+# The repo had no CI at all before this file: no analyze, no test, no build.
+# This job is deliberately small — it only fails when the Dart code is broken,
+# so it can be trusted from day one. Platform builds (APK/IPA) are a separate
+# step once an Android keystore and an iOS GoogleService-Info.plist exist.
+#
+# Analyze/test output is mirrored into the Step Summary on purpose: the raw job
+# log lives on a blob host that is awkward to reach from tooling, while
+# `GET /repos/{owner}/{repo}/actions/runs/{id}` returns the summary as HTML.
+
+jobs:
+  analyze-and-test:
+    name: Analyze & test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          # Keep the SDK explicit so a Flutter release cannot silently break
+          # main. The code uses Color.withValues(alpha:) → needs >= 3.27.
+          flutter-version: 3.35.0
+          cache: true
+
+      - name: Record toolchain in summary
+        run: |
+          {
+            echo "## Toolchain"
+            echo '```'
+            flutter --version
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # GitHub cannot turn `flutter analyze` output into annotations, and the
+      # raw job log lives on a blob host that tooling frequently cannot reach.
+      # So every finding is re-emitted as `::error/warning file=...,line=...`,
+      # readable from GET /check-runs/{id}/annotations. Both analyzer formats are
+      # handled ("level • msg • path:line:col • rule" and "[rule] level • ..."),
+      # and the FULL output goes into the Step Summary — an earlier version read
+      # only the tail, which hid findings and made a red run unfixable.
+      - name: Analyze (blocking)
+        run: |
+          set +e
+          flutter analyze --no-pub 2>&1 | tee analyze.txt
+          code=${PIPESTATUS[0]}
+          ANALYZE_EXIT=$code python3 - <<'PYEOF'
+          import os, re, collections
+
+          code = os.environ.get('ANALYZE_EXIT', '0')
+          text = open('analyze.txt', encoding='utf-8', errors='replace').read()
+          lines = [l.strip() for l in text.split('\n') if l.strip()]
+
+          B = '\u2022'
+          def esc(t):
+              return (t.replace('%', '%25').replace('\r', ' ').replace('\n', ' ')
+                       .replace(':', '%3A').replace(',', '%2C'))
+
+          trailing_rule = re.compile(
+              r'^(?P<level>error|warning|info)\s*' + B + r'\s*(?P<msg>.*?)\s*' + B +
+              r'\s*(?P<path>.+?):(?P<line>\d+):(?P<col>\d+)\s*' + B + r'\s*(?P<rule>[\w.-]+)$')
+          bracket_rule = re.compile(
+              r'^\[(?P<rule>[\w.-]+)\]\s+(?P<level>error|warning|info)\s*' + B +
+              r'\s*(?P<msg>.*?)\s*' + B + r'\s*(?P<path>.+?):(?P<line>\d+):(?P<col>\d+)$')
+
+          counts = collections.Counter()
+          parsed = 0
+          for line in lines:
+              m = trailing_rule.match(line) or bracket_rule.match(line)
+              if not m:
+                  continue
+              parsed += 1
+              level = m.group('level')
+              counts[level] += 1
+              counts[m.group('rule')] += 1
+              # GitHub annotation levels are error/warning/notice.
+              gh = {'error': 'error', 'warning': 'warning', 'info': 'notice'}[level]
+              print(f"::{gh} file={m.group('path')},line={m.group('line')},"
+                    f"col={m.group('col')}::{esc(m.group('rule') + ': ' + m.group('msg'))}")
+
+          print(f'::notice::flutter analyze exit={code}, findings parsed={parsed}, '
+                f"errors={counts['error']}, warnings={counts['warning']}, infos={counts['info']}")
+
+          if code != '0' and parsed == 0:
+              print('::error::analyze failed but no finding was parsed; raw tail below')
+              for line in lines[-60:]:
+                  print(f'::error::{esc(line[:400])}')
+          PYEOF
+          {
+            echo "## flutter analyze (exit $code)"
+            echo '```'
+            cat analyze.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit $code
+
+      # The expanded reporter writes "path: group test name [E]" followed by the
+      # expectation block, so one pass gives both the failing test names and the
+      # reason. The whole output is mirrored into the PR comment by the next
+      # step: the check-run annotations API caps failure annotations at 10, and
+      # both the job log and uploaded artifacts are served from blob hosts that
+      # tooling often cannot reach.
+      - name: Test (blocking)
+        run: |
+          set +e
+          flutter test --no-pub --reporter expanded 2>&1 | tee test.txt
+          code=${PIPESTATUS[0]}
+          {
+            echo "## flutter test (exit $code)"
+            echo '```'
+            tail -n 400 test.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit $code
+
+      # Reporting is done in Python, not shell: two earlier versions lost data to
+      # shell quoting and to a `tail` cap (a run reported "15 failed" while the
+      # comment showed two). This step posts one comment per run containing every
+      # failing test name plus every exception block, truncated only at the very
+      # end and with an explicit note when that happens.
+      - name: Report results on the PR
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python3 - <<'PYEOF'
+          import os, re, json, urllib.request
+
+          def read(name):
+              try:
+                  with open(name, encoding='utf-8', errors='replace') as handle:
+                      return handle.read().split('\n')
+              except OSError:
+                  return []
+
+          analyze = read('analyze.txt')
+          test = read('test.txt')
+          lines = []
+
+          lines.append('<!-- vipmind-ci-report -->')
+          lines.append('### CI report \u2014 commit ' + os.environ.get('GITHUB_SHA', '')[:7])
+          lines.append('')
+          lines.append('Run: ' + os.environ.get('RUN_URL', ''))
+          lines.append('')
+
+          lines.append('#### flutter analyze')
+          lines.append('```')
+          lines.extend(l.rstrip() for l in analyze[-40:] if l.strip())
+          lines.append('```')
+          lines.append('')
+
+          counts = ''
+          for l in test:
+              m = re.search(r'(\d+ tests? passed[^\n]*|\d+ -\d+: Some tests failed[^\n]*|All tests passed[^\n]*)', l)
+              if m:
+                  counts = m.group(1).strip()
+
+          failing = []
+          for l in test:
+              m = re.search(r'(test/[\w./-]+\.dart): (.+?) \[E\]', l)
+              if m:
+                  entry = m.group(1) + ': ' + m.group(2)
+                  if entry not in failing:
+                      failing.append(entry)
+
+          # Keep only the diagnostic lines of each exception block. The full
+          # block is ~40 lines of Flutter stack frames; compressing it is what
+          # lets every failure fit in one comment instead of the last two.
+          keep = re.compile(
+              r'^\u2550\u2550\u2561|^The following|^Expected:|^\s*Actual:|^\s*Which:|'
+              r'^When the exception|^This was caught|^\s*file:///|^The test description was|'
+              r'^\s{2}\S.*$|^Failed assertion|^A Timer is still pending|^pumpAndSettle timed out|'
+              r'^Could not find a generator|^ZEN TEXTS:|^Bad state|^NoSuchMethod|'
+              r'^ProviderNotFoundException|^Test failed')
+          drop = re.compile(r'package:flutter/|package:flutter_test/|package:matcher|'
+                            r'package:fake_async|dart:async|package:stack_trace|'
+                            r'asynchronous suspension|elided|^#\d+')
+
+          blocks = []
+          for i, l in enumerate(test):
+              if not l.startswith('\u2550\u2550\u2561'):
+                  continue
+              chunk = []
+              for x in test[i:i + 70]:
+                  t = x.rstrip()
+                  if not t.strip():
+                      continue
+                  if t.startswith('\u2550' * 10) and len(chunk) > 1:
+                      break
+                  # `keep` wins over `drop`: an earlier version dropped every
+                  # indented line, which deleted exactly the Expected/Actual/Which
+                  # triplet, so 3 of 5 failures arrived with no reason at all.
+                  if keep.search(t):
+                      chunk.append(t[:220])
+                  elif not drop.search(t) and len(chunk) < 6:
+                      chunk.append(t[:220])
+                  if len(chunk) > 24:
+                      break
+              blocks.append('\n'.join(chunk))
+
+          # Backstop: if there are more failures than blocks, some failure has no
+          # captured reason. Say so explicitly and dump the last raw lines rather
+          # than letting the report look complete when it is not.
+          if len(failing) > len(blocks):
+              blocks.append('!! ' + str(len(failing) + 1) + ' failing tests but only '
+                            + str(len(blocks)) + ' exception blocks captured.\n'
+                            + '\n'.join(x.rstrip()[:220] for x in test[-260:] if x.strip()))
+
+          # debugPrint output from a failing test lands just before its [E] line,
+          # which is where diagnostics like ZEN TEXTS live.
+          context = []
+          for i, l in enumerate(test):
+              if '[E]' in l and not l.strip().startswith('00:'):
+                  context.append(l.strip()[:220])
+              elif '[E]' in l:
+                  # The expanded reporter prints the failure reason BEFORE the
+                  # "[E]" line, so keep the preceding lines verbatim. Without
+                  # this, three failures arrived with no reason at all.
+                  window = [x.strip()[:220] for x in test[max(0, i - 14):i]
+                            if x.strip()]
+                  context.append('\n'.join(window[-12:]))
+
+          lines.append('#### flutter test \u2014 ' + (counts or 'summary line not found'))
+          lines.append('')
+          lines.append('Failing tests: **' + str(len(failing)) + '** \u00b7 exception blocks captured: **' + str(len(blocks)) + '**')
+          lines.append('')
+          if failing:
+              for name in failing:
+                  lines.append('- `' + name + '`')
+              lines.append('')
+          if context:
+              lines.append('#### Context before each [E] marker')
+              lines.append('```')
+              lines.extend(context[:40])
+              lines.append('```')
+              lines.append('')
+          if blocks:
+              lines.append('#### Exception detail (' + str(len(blocks)) + ' blocks)')
+              lines.append('```')
+              lines.append(('\n' + '-' * 70 + '\n').join(blocks[:60]))
+              lines.append('```')
+          else:
+              lines.append('#### flutter test \u2014 raw tail')
+              lines.append('```')
+              lines.extend(l.rstrip() for l in test[-120:] if l.strip())
+              lines.append('```')
+
+          body = '\n'.join(lines)
+          limit = 60000
+          if len(body) > limit:
+              body = body[:limit] + '\n\n_(truncated \u2014 see the run\u2019s Step Summary for the rest)_'
+
+          number = os.environ.get('PR_NUMBER') or ''
+          token = os.environ.get('GH_TOKEN') or ''
+          repo = os.environ.get('GITHUB_REPOSITORY') or ''
+          if not number.isdigit() or not token or not repo:
+              print('No PR number or token \u2014 report printed to the log only.')
+              print(body[:4000])
+          else:
+              url = 'https://api.github.com/repos/' + repo + '/issues/' + number + '/comments'
+              request = urllib.request.Request(
+                  url,
+                  data=json.dumps({'body': body}).encode('utf-8'),
+                  headers={
+                      'Authorization': 'Bearer ' + token,
+                      'Accept': 'application/vnd.github+json',
+                      'X-GitHub-Api-Version': '2022-11-28',
+                  },
+                  method='POST',
+              )
+              with urllib.request.urlopen(request) as response:
+                  print('Posted CI report comment:', response.status)
+          PYEOF
+
+      # Informational: run `dart format .` locally before pushing. This step
+      # does not fail the build yet — the codebase predates any formatting
+      # enforcement, and a red first run teaches nobody anything. Flip it to
+      # blocking once `dart format .` has been applied (card IN4-131).
+      - name: Formatting check (informational)
+        continue-on-error: true
+        run: |
+          set +e
+          dart format --output=none --set-exit-if-changed lib test 2>&1 | tee format.txt
+          code=${PIPESTATUS[0]}
+          {
+            echo "## dart format --set-exit-if-changed (exit $code)"
+            echo '```'
+            tail -n 100 format.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit $code
+
+      # Raw output as an artifact: annotations are capped at 10 in the API
+      # response, and the job log lives on a blob host that tooling often cannot
+      # reach. An artifact is the reliable way to read a full failure list.
+      - name: Upload analyzer and test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analyze-test-output
+          path: |
+            analyze.txt
+            test.txt
+            format.txt
+            pubspec.lock
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Check the template catalog is valid JSON
+        run: python3 -c "import json;json.load(open('assets/templates/default_templates.json'));print('default_templates.json OK')"

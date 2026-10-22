@@ -1,0 +1,70 @@
+rules_version = '2';
+
+// Recommended starting point for VipMind.
+//
+// Data shape actually used by the code (lib/data/repositories/mindmap_repository.dart):
+//   * a TOP-LEVEL `mindmaps` collection, each doc owned via `ownerId`,
+//     shared via `collaboratorIds` (array of uid), open via `isPublic`.
+//
+// Note: lib/core/services/firebase_service.dart also declares a
+// `users/{uid}/mindmaps` subcollection helper, but nothing calls it. If the
+// product ever moves to that shape, this file must change with it.
+//
+// Deploy: firebase deploy --only firestore:rules
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner() {
+      return signedIn()
+        && request.auth.uid == resource.data.ownerId;
+    }
+
+    function isCollaborator() {
+      return signedIn()
+        && request.auth.uid in resource.data.get('collaboratorIds', []);
+    }
+
+    function isPublic() {
+      return resource.data.get('isPublic', false) == true;
+    }
+
+    // Creating a map: must be signed in and must claim yourself as the owner.
+    // (Prevents writing maps into somebody else's account.)
+    function canCreateMindmap() {
+      return signedIn() && request.resource.data.ownerId == request.auth.uid;
+    }
+
+    // Owner or collaborator. Public maps are readable but only editable by
+    // their owner/collaborators — change this if you want open editing.
+    function canWriteMindmap() {
+      return isOwner() || isCollaborator();
+    }
+
+    match /mindmaps/{mindmapId} {
+      allow read: if signedIn() && (isOwner() || isCollaborator() || isPublic());
+      allow create: if canCreateMindmap();
+      allow update, delete: if canWriteMindmap();
+    }
+
+    // A signed-in user owns exactly one profile document, keyed by their uid.
+    match /users/{userId} {
+      allow read, write: if signedIn() && request.auth.uid == userId;
+    }
+
+    // Official templates are readable by any signed-in user and writable only
+    // from the Firebase console / Admin SDK (no client rule => denied).
+    match /templates/{templateId} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    // Everything else is denied by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

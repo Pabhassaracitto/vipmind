@@ -1,141 +1,31 @@
 import 'package:flutter/material.dart';
 
-// Import all screens
-import '../features/splash/splash_screen.dart';
+import '../features/ai_engine/screens/image_to_mindmap_screen.dart';
+import '../features/ai_engine/screens/text_to_mindmap_screen.dart';
+import '../features/ai_engine/screens/voice_to_mindmap_screen.dart';
+import '../features/anki/screens/anki_deck_screen.dart';
+import '../features/anki/screens/flashcard_review_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/register_screen.dart';
 import '../features/home/screens/home_screen.dart';
 import '../features/mindmap/screens/mindmap_editor_screen.dart';
+import '../features/mindmap/screens/mindmap_preview_screen.dart';
+import '../features/presentation/screens/presentation_screen.dart';
+import '../features/settings/screens/settings_screen.dart';
+import '../features/splash/splash_screen.dart';
+import '../features/templates/screens/template_gallery_screen.dart';
+import '../features/zen_mode/zen_mode_screen.dart';
 
-// Temporary placeholder screens (create these files)
-class MindmapPreviewScreen extends StatelessWidget {
-  final String mindmapId;
-  const MindmapPreviewScreen({super.key, required this.mindmapId});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Preview')),
-      body: Center(child: Text('Preview: $mindmapId')),
-    );
-  }
-}
-
-class TextToMindmapScreen extends StatelessWidget {
-  const TextToMindmapScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Text to Mindmap')),
-      body: const Center(child: Text('Coming Soon')),
-    );
-  }
-}
-
-class VoiceToMindmapScreen extends StatelessWidget {
-  const VoiceToMindmapScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Voice to Mindmap')),
-      body: const Center(child: Text('Coming Soon')),
-    );
-  }
-}
-
-class ImageToMindmapScreen extends StatelessWidget {
-  const ImageToMindmapScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Image to Mindmap')),
-      body: const Center(child: Text('Coming Soon')),
-    );
-  }
-}
-
-class TemplateGalleryScreen extends StatelessWidget {
-  const TemplateGalleryScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Templates')),
-      body: const Center(child: Text('Coming Soon')),
-    );
-  }
-}
-
-class PresentationScreen extends StatelessWidget {
-  final String mindmapId;
-  const PresentationScreen({super.key, required this.mindmapId});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Presentation')),
-      body: Center(child: Text('Presenting: $mindmapId')),
-    );
-  }
-}
-
-class AnkiDeckScreen extends StatelessWidget {
-  const AnkiDeckScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Anki Deck')),
-      body: const Center(child: Text('Coming Soon')),
-    );
-  }
-}
-
-class FlashcardReviewScreen extends StatelessWidget {
-  final String deckId;
-  const FlashcardReviewScreen({super.key, required this.deckId});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Review')),
-      body: Center(child: Text('Reviewing: $deckId')),
-    );
-  }
-}
-
-class ZenModeScreen extends StatelessWidget {
-  const ZenModeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Colors.black,
-      body: Center(
-        child: Text('Zen Mode',
-            style: TextStyle(color: Colors.white, fontSize: 32)),
-      ),
-    );
-  }
-}
-
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
-      body: const Center(child: Text('Settings')),
-    );
-  }
-}
-
-// Routes class
+/// All named routes of the app.
+///
+/// Rules:
+/// * every route constant below MUST have a `case` in [generateRoute] —
+///   otherwise navigation silently falls back to Home;
+/// * screens live in `lib/features/**` and are imported here. Do NOT declare
+///   placeholder widgets in this file (that used to create duplicate classes).
 class AppRoutes {
+  AppRoutes._();
+
   static const String splash = '/';
   static const String login = '/login';
   static const String register = '/register';
@@ -150,65 +40,104 @@ class AppRoutes {
   static const String ankiDeck = '/anki';
   static const String flashcardReview = '/anki/review';
   static const String zenMode = '/zen-mode';
-  static const String settings = '/settings';
+  /// Named `settingsRoute`, not `settings`: inside `generateRoute` a case
+  /// label written `settings` would be a *variable pattern* in Dart 3 — it
+  /// binds instead of comparing, so it would swallow every remaining route.
+  static const String settingsRoute = '/settings';
 
-  static Route<dynamic> generateRoute(RouteSettings settings) {
-    switch (settings.name) {
+  // The parameter is NOT called `settings`: a switch case like
+  // `case settings:` would bind a *variable* pattern (Dart 3) and silently
+  // match everything, and `case AppRoutes.settings:` is rejected because a
+  // constant pattern may not be a prefixed identifier. With the parameter
+  // renamed, every case below is a plain constant pattern.
+  static Route<dynamic> generateRoute(RouteSettings routeSettings) {
+    switch (routeSettings.name) {
       case splash:
-        return _buildRoute(const SplashScreen(), settings);
+        return _buildRoute(const SplashScreen(), routeSettings);
+
       case login:
-        return _buildRoute(const LoginScreen(), settings);
+        return _buildRoute(const LoginScreen(), routeSettings);
+
       case register:
-        return _buildRoute(const RegisterScreen(), settings);
+        return _buildRoute(const RegisterScreen(), routeSettings);
+
       case home:
-        return _buildRoute(const HomeScreen(), settings);
+        return _buildRoute(const HomeScreen(), routeSettings);
+
       case mindmapEditor:
-        final args = settings.arguments as Map<String, dynamic>?;
         return _buildRoute(
-          MindmapEditorScreen(mindmapId: args?['mindmapId']),
-          settings,
+          MindmapEditorScreen(mindmapId: _arg<String>(routeSettings, 'mindmapId')),
+          routeSettings,
         );
+
       case mindmapPreview:
-        final args = settings.arguments as Map<String, dynamic>;
         return _buildRoute(
-          MindmapPreviewScreen(mindmapId: args['mindmapId']),
-          settings,
+          MindmapPreviewScreen(
+            mindmapId: _requiredArg(routeSettings, 'mindmapId'),
+          ),
+          routeSettings,
         );
-      /*case textToMindmap:
-        return _buildRoute(const TextToMindmapScreen(), settings);
+
+      case textToMindmap:
+        return _buildRoute(const TextToMindmapScreen(), routeSettings);
+
       case voiceToMindmap:
-        return _buildRoute(const VoiceToMindmapScreen(), settings);
+        return _buildRoute(const VoiceToMindmapScreen(), routeSettings);
+
       case imageToMindmap:
-        return _buildRoute(const ImageToMindmapScreen(), settings);
+        return _buildRoute(const ImageToMindmapScreen(), routeSettings);
+
       case templateGallery:
-        return _buildRoute(const TemplateGalleryScreen(), settings);
+        return _buildRoute(const TemplateGalleryScreen(), routeSettings);
+
       case presentation:
-        final args = settings.arguments as Map<String, dynamic>;
         return _buildRoute(
-          PresentationScreen(mindmapId: args['mindmapId']),
-          settings,
+          PresentationScreen(
+            mindmapId: _requiredArg(routeSettings, 'mindmapId'),
+          ),
+          routeSettings,
         );
+
       case ankiDeck:
-        return _buildRoute(const AnkiDeckScreen(), settings);
+        return _buildRoute(const AnkiDeckScreen(), routeSettings);
+
       case flashcardReview:
-        final args = settings.arguments as Map<String, dynamic>;
         return _buildRoute(
-          FlashcardReviewScreen(deckId: args['deckId']),
-          settings,
+          FlashcardReviewScreen(
+            deckId: _requiredArg(routeSettings, 'deckId'),
+          ),
+          routeSettings,
         );
+
       case zenMode:
-        return _buildRoute(const ZenModeScreen(), settings);
-      case AppRoutes.settings:
-        return _buildRoute(const SettingsScreen(), settings);
+        return _buildRoute(const ZenModeScreen(), routeSettings);
+
+      case settingsRoute:
+        return _buildRoute(const SettingsScreen(), routeSettings);
+
       default:
-        return _buildRoute(const HomeScreen(), settings);*/
-      default:
-        return _buildRoute(const HomeScreen(), settings);
+        return _buildRoute(UnknownRouteScreen(routeName: routeSettings.name), routeSettings);
     }
   }
 
-  static PageRouteBuilder _buildRoute(Widget page, RouteSettings settings) {
-    return PageRouteBuilder(
+  /// Reads an optional route argument.
+  static T? _arg<T>(RouteSettings settings, String key) {
+    final args = settings.arguments;
+    if (args is Map && args[key] is T) return args[key] as T;
+    return null;
+  }
+
+  /// Reads a required route argument; returns an empty string instead of
+  /// throwing, so a missing argument never crashes the app.
+  static String _requiredArg(RouteSettings settings, String key) {
+    return _arg<String>(settings, key) ?? '';
+  }
+
+  static PageRouteBuilder<dynamic> _buildRoute(
+    Widget page,
+    RouteSettings settings,
+  ) {
+    return PageRouteBuilder<dynamic>(
       settings: settings,
       pageBuilder: (context, animation, secondaryAnimation) => page,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -216,7 +145,7 @@ class AppRoutes {
         const end = Offset.zero;
         const curve = Curves.easeInOutCubic;
 
-        var tween = Tween(begin: begin, end: end).chain(
+        final tween = Tween(begin: begin, end: end).chain(
           CurveTween(curve: curve),
         );
 
@@ -226,6 +155,52 @@ class AppRoutes {
         );
       },
       transitionDuration: const Duration(milliseconds: 300),
+    );
+  }
+}
+
+/// Shown when code navigates to a route that does not exist.
+///
+/// Deliberately loud: an unregistered route is a bug, and silently landing on
+/// Home hides it.
+class UnknownRouteScreen extends StatelessWidget {
+  const UnknownRouteScreen({super.key, this.routeName});
+
+  final String? routeName;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Page not found')),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.explore_off_rounded, size: 56),
+              const SizedBox(height: 16),
+              Text(
+                'No route registered for "${routeName ?? '?'}"',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Register it in lib/app/routes.dart → AppRoutes.generateRoute',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 24),
+              FilledButton(
+                onPressed: () => Navigator.of(context)
+                    .pushNamedAndRemoveUntil(AppRoutes.home, (route) => false),
+                child: const Text('Back to Home'),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

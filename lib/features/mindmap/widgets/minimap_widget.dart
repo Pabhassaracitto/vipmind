@@ -1,3 +1,5 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter/material.dart';
 
 import '../../../data/models/mindmap_model.dart';
@@ -44,17 +46,17 @@ class MinimapWidget extends StatelessWidget {
         width: _minimapSize,
         height: _minimapSize,
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor.withOpacity(0.95),
+          color: Theme.of(context).cardColor.withValues(alpha: 0.95),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ],
           border: Border.all(
-            color: AppColors.textSecondary.withOpacity(0.1),
+            color: AppColors.textSecondary.withValues(alpha: 0.1),
           ),
         ),
         child: ClipRRect(
@@ -159,7 +161,7 @@ class MinimapWidget extends StatelessWidget {
             color: AppColors.primaryBlue,
             width: 2,
           ),
-          color: AppColors.primaryBlue.withOpacity(0.1),
+          color: AppColors.primaryBlue.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(4),
         ),
       ),
@@ -171,9 +173,11 @@ class MinimapWidget extends StatelessWidget {
     final canvasX = (localPosition.dx - _padding) / mapScale + bounds.left;
     final canvasY = (localPosition.dy - _padding) / mapScale + bounds.top;
 
-    // Calculate new offset to center on this position
-    final screenSize = WidgetsBinding.instance.window.physicalSize /
-        WidgetsBinding.instance.window.devicePixelRatio;
+    // Calculate new offset to centre on this position.
+    // `WidgetsBinding.instance.window` is deprecated (multi-window support);
+    // the first view's physical size / dpr is the same logical size.
+    final view = PlatformDispatcher.instance.views.first;
+    final screenSize = view.physicalSize / view.devicePixelRatio;
 
     final newOffset = Offset(
       -canvasX * currentScale + screenSize.width / 2,

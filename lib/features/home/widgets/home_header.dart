@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../core/services/firebase_service.dart';
 
 class HomeHeader extends StatelessWidget {
   final VoidCallback onMenuTap;
@@ -15,7 +15,7 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = FirebaseService.currentUser;
     final greeting = _getGreeting();
 
     return Container(
@@ -114,7 +114,7 @@ class HomeHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),

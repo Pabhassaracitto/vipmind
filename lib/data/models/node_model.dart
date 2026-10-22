@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'audio_note_model.dart';
+import '../../core/utils/firestore_converters.dart';
 
 enum NodeShape { rectangle, roundedRectangle, ellipse, diamond, hexagon }
 enum NodeType { idea, task, question, note, image, audio, link }
@@ -157,8 +158,10 @@ class NodeModel {
       'positionY': position.dy,
       'width': size.width,
       'height': size.height,
-      'color': color.value,
-      'textColor': textColor.value,
+      // toARGB32() replaces the deprecated Color.value; same 32-bit ARGB int,
+      // so documents already saved keep reading back correctly.
+      'color': color.toARGB32(),
+      'textColor': textColor.toARGB32(),
       'shape': shape.index,
       'type': type.index,
       'iconName': iconName,
@@ -181,35 +184,51 @@ class NodeModel {
 
   // From JSON
   factory NodeModel.fromJson(Map<String, dynamic> json) {
+    final audioNoteJson = json['audioNote'];
+
     return NodeModel(
-      id: json['id'],
-      text: json['text'],
-      description: json['description'],
-      position: Offset(json['positionX'], json['positionY']),
-      size: Size(json['width'], json['height']),
-      color: Color(json['color']),
-      textColor: Color(json['textColor']),
-      shape: NodeShape.values[json['shape']],
-      type: NodeType.values[json['type']],
-      iconName: json['iconName'],
-      imageUrl: json['imageUrl'],
-      audioNote: json['audioNote'] != null
-          ? AudioNoteModel.fromJson(json['audioNote'])
-          : null,
-      childrenIds: List<String>.from(json['childrenIds'] ?? []),
-      parentId: json['parentId'],
-      depth: json['depth'] ?? 0,
-      isExpanded: json['isExpanded'] ?? true,
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
-      metadata: json['metadata'],
-      isAnkiCard: json['isAnkiCard'] ?? false,
-      ankiFront: json['ankiFront'],
-      ankiBack: json['ankiBack'],
-      ankiInterval: json['ankiInterval'],
-      ankiNextReview: json['ankiNextReview'] != null
-          ? DateTime.parse(json['ankiNextReview'])
-          : null,
+      id: json['id'] as String,
+      text: (json['text'] ?? '') as String,
+      description: json['description'] as String?,
+      // Firestore stores whole numbers as int — never pass the raw value into
+      // Offset/Size or you get "int is not a subtype of double".
+      position: Offset(
+        firestoreDouble(json['positionX']),
+        firestoreDouble(json['positionY']),
+      ),
+      size: Size(
+        firestoreDouble(json['width'], fallback: 150),
+        firestoreDouble(json['height'], fallback: 60),
+      ),
+      color: Color(firestoreColorValue(json['color'])),
+      textColor: Color(
+        firestoreColorValue(json['textColor'], fallback: 0xFFFFFFFF),
+      ),
+      shape: firestoreEnum(json['shape'], NodeShape.values,
+          fallback: NodeShape.roundedRectangle),
+      type: firestoreEnum(json['type'], NodeType.values,
+          fallback: NodeType.idea),
+      iconName: json['iconName'] as String?,
+      imageUrl: json['imageUrl'] as String?,
+      audioNote: audioNoteJson == null
+          ? null
+          : AudioNoteModel.fromJson(firestoreMap(audioNoteJson)),
+      childrenIds: firestoreStringList(json['childrenIds']),
+      parentId: json['parentId'] as String?,
+      depth: firestoreInt(json['depth']),
+      isExpanded: (json['isExpanded'] ?? true) as bool,
+      isSelected: (json['isSelected'] ?? false) as bool,
+      // The repository writes FieldValue.serverTimestamp(), so these come back
+      // as Timestamp objects, not ISO strings.
+      createdAt: firestoreDateOr(json['createdAt'], DateTime.now()),
+      updatedAt: firestoreDateOr(json['updatedAt'], DateTime.now()),
+      metadata: json['metadata'] == null ? null : firestoreMap(json['metadata']),
+      isAnkiCard: (json['isAnkiCard'] ?? false) as bool,
+      ankiFront: json['ankiFront'] as String?,
+      ankiBack: json['ankiBack'] as String?,
+      ankiInterval:
+          json['ankiInterval'] == null ? null : firestoreInt(json['ankiInterval']),
+      ankiNextReview: firestoreDate(json['ankiNextReview']),
     );
   }
 }

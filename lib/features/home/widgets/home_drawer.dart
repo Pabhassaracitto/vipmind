@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../app/routes.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../core/services/firebase_service.dart';
 
 class HomeDrawer extends StatelessWidget {
   const HomeDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = FirebaseService.currentUser;
 
     return Drawer(
       child: Column(
@@ -59,7 +59,7 @@ class HomeDrawer extends StatelessWidget {
                 Text(
                   user?.email ?? '',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 14,
                   ),
                 ),
@@ -107,7 +107,7 @@ class HomeDrawer extends StatelessWidget {
                   label: 'Settings',
                   onTap: () {
                     Navigator.pop(context);
-                    Navigator.pushNamed(context, AppRoutes.settings);
+                    Navigator.pushNamed(context, AppRoutes.settingsRoute);
                   },
                 ),
                 _DrawerItem(
@@ -131,7 +131,7 @@ class HomeDrawer extends StatelessWidget {
             label: 'Sign Out',
             color: AppColors.errorRed,
             onTap: () async {
-              await FirebaseAuth.instance.signOut();
+              await FirebaseService.trySignOut();
               if (context.mounted) {
                 Navigator.pushReplacementNamed(context, AppRoutes.login);
               }

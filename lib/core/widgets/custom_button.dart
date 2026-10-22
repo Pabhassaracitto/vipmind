@@ -106,13 +106,13 @@ class _CustomButtonState extends State<CustomButton>
             : null,
         color: isEnabled
             ? null
-            : (widget.backgroundColor ?? AppColors.primaryBlue).withOpacity(0.5),
+            : (widget.backgroundColor ?? AppColors.primaryBlue).withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(widget.borderRadius),
         boxShadow: isEnabled
             ? [
           BoxShadow(
             color: (widget.backgroundColor ?? AppColors.primaryBlue)
-                .withOpacity(0.3),
+                .withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -133,13 +133,13 @@ class _CustomButtonState extends State<CustomButton>
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(widget.borderRadius),
         border: Border.all(
-          color: isEnabled ? color : color.withOpacity(0.5),
+          color: isEnabled ? color : color.withValues(alpha: 0.5),
           width: 2,
         ),
       ),
       child: _buildContent(
         isEnabled,
-        isEnabled ? color : color.withOpacity(0.5),
+        isEnabled ? color : color.withValues(alpha: 0.5),
       ),
     );
   }

@@ -1,3 +1,5 @@
+import '../../core/utils/firestore_converters.dart';
+
 class UserModel {
   final String id;
   String name;
@@ -33,15 +35,16 @@ class UserModel {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'],
-      name: json['name'],
-      email: json['email'],
-      photoUrl: json['photoUrl'],
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
-          : null,
-      settings: Map<String, dynamic>.from(json['settings'] ?? {}),
-      stats: Map<String, int>.from(json['stats'] ?? {}),
+      id: json['id'] as String,
+      name: (json['name'] ?? '') as String,
+      email: (json['email'] ?? '') as String,
+      photoUrl: json['photoUrl'] as String?,
+      // May be a Firestore Timestamp or an ISO string depending on who wrote it.
+      createdAt: firestoreDate(json['createdAt']),
+      settings: firestoreMap(json['settings']),
+      stats: firestoreMap(json['stats']).map(
+        (key, value) => MapEntry(key, firestoreInt(value)),
+      ),
     );
   }
 }

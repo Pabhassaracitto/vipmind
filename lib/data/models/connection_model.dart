@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
+import '../../core/utils/firestore_converters.dart';
 
 enum ConnectionStyle { straight, curved, orthogonal, bezier }
 enum ConnectionType { parent, sibling, reference, dependency }
@@ -57,7 +58,7 @@ class ConnectionModel {
       'id': id,
       'fromNodeId': fromNodeId,
       'toNodeId': toNodeId,
-      'color': color.value,
+      'color': color.toARGB32(),
       'strokeWidth': strokeWidth,
       'style': style.index,
       'type': type.index,
@@ -68,15 +69,17 @@ class ConnectionModel {
 
   factory ConnectionModel.fromJson(Map<String, dynamic> json) {
     return ConnectionModel(
-      id: json['id'],
-      fromNodeId: json['fromNodeId'],
-      toNodeId: json['toNodeId'],
-      color: Color(json['color']),
-      strokeWidth: json['strokeWidth']?.toDouble() ?? 2.0,
-      style: ConnectionStyle.values[json['style'] ?? 1],
-      type: ConnectionType.values[json['type'] ?? 0],
-      label: json['label'],
-      isAnimated: json['isAnimated'] ?? false,
+      id: json['id'] as String,
+      fromNodeId: json['fromNodeId'] as String,
+      toNodeId: json['toNodeId'] as String,
+      color: Color(firestoreColorValue(json['color'])),
+      strokeWidth: firestoreDouble(json['strokeWidth'], fallback: 2.0),
+      style: firestoreEnum(json['style'], ConnectionStyle.values,
+          fallback: ConnectionStyle.curved),
+      type: firestoreEnum(json['type'], ConnectionType.values,
+          fallback: ConnectionType.parent),
+      label: json['label'] as String?,
+      isAnimated: (json['isAnimated'] ?? false) as bool,
     );
   }
 }
