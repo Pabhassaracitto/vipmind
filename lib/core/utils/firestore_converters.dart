@@ -17,13 +17,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Reads a date field that may be a [Timestamp], an ISO-8601 [String],
 // milliseconds since epoch, or missing.
+/// Every branch returns a **UTC** DateTime.
+///
+/// Dart's `==` on DateTime compares the instant but `hashCode`/`toString` and
+/// several matchers are zone-sensitive, and mixing zones is how the millis branch
+/// silently compared unequal to a UTC literal. One zone for the whole function
+/// removes that class of bug.
 DateTime? firestoreDate(Object? value) {
   if (value == null) return null;
-  if (value is Timestamp) return value.toDate();
-  if (value is DateTime) return value;
+  if (value is Timestamp) return value.toDate().toUtc();
+  if (value is DateTime) return value.toUtc();
   if (value is String) {
     if (value.isEmpty) return null;
-    return DateTime.tryParse(value);
+    return DateTime.tryParse(value)?.toUtc();
   }
   if (value is int) {
     // UTC, because epoch milliseconds carry no zone. Returning a local DateTime
