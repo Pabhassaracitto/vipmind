@@ -6,10 +6,10 @@ này. Mỗi prompt tương ứng một card Linear.
 
 | # | Prompt | Card | Cần gì ngoài agent |
 |---|---|---|---|
-| 1 | **Kiểm chứng bằng SDK thật** ← làm trước tiên | [IN4-125](https://linear.app/in4up/issue/IN4-125) / IN4-129, 130, 131 | Máy có Flutter SDK + Android SDK |
-| 2 | Firebase iOS + rules + index | [IN4-126](https://linear.app/in4up/issue/IN4-126) / IN4-132, 133, 134 | Quyền Firebase console, máy Mac (để build iOS) |
-| 3 | Anki/Flashcard UI *(mũi nhọn B — không cần quyết định bên ngoài)* | [IN4-136](https://linear.app/in4up/issue/IN4-136) | Không |
-| 4 | Export PNG/PDF + Share *(mũi nhọn A — cần chủ dự án duyệt)* | [IN4-135](https://linear.app/in4up/issue/IN4-135) | Quyết định của chủ dự án |
+| 1 | **Kiểm chứng bằng SDK thật** ← làm trước tiên | [PSRC-125](https://linear.app/in4up/issue/PSRC-125) / PSRC-129, 130, 131 | Máy có Flutter SDK + Android SDK |
+| 2 | Firebase iOS + rules + index | [PSRC-126](https://linear.app/in4up/issue/PSRC-126) / PSRC-132, 133, 134 | Quyền Firebase console, máy Mac (để build iOS) |
+| 3 | Anki/Flashcard UI *(mũi nhọn B — không cần quyết định bên ngoài)* | [PSRC-136](https://linear.app/in4up/issue/PSRC-136) | Không |
+| 4 | Export PNG/PDF + Share *(mũi nhọn A — cần chủ dự án duyệt)* | [PSRC-135](https://linear.app/in4up/issue/PSRC-135) | Quyết định của chủ dự án |
 
 > **Cập nhật 23/10/2026 — prompt 1 đã chạy xong một phần, trên CI thật:**
 > `flutter pub get` ✅ · `flutter analyze` ✅ **No issues found!** · `flutter test` ✅
@@ -26,7 +26,7 @@ này. Mỗi prompt tương ứng một card Linear.
 
 ---
 
-## PROMPT 1 — VM-P0: kiểm chứng bằng Flutter SDK thật (IN4-125)
+## PROMPT 1 — VM-P0: kiểm chứng bằng Flutter SDK thật (PSRC-125)
 
 ```
 BẠN LÀM GÌ: kiểm chứng và làm xanh một nhánh Flutter vừa được viết lại toàn bộ
@@ -63,11 +63,11 @@ VIỆC CÒN LẠI, theo thứ tự, mỗi bước dán output thật vào báo c
    CI sinh ra nó và để trong artifact `analyze-test-output`).
 3. `flutter analyze` + `flutter test` — xác nhận xanh trên máy dev, không chỉ trên CI.
 4. `dart format .` → commit → bỏ `continue-on-error: true` ở bước
-   *Formatting check* trong `.github/workflows/ci.yml` (card IN4-131).
+   *Formatting check* trong `.github/workflows/ci.yml` (card PSRC-131).
 5. `flutter build apk --debug` — phép thử thật cho applicationId `com.vipmind`
    khớp `package_name` trong google-services.json, và cho plugin google-services.
    Nếu fail vì google-services: KHÔNG xoá plugin, hãy đối chiếu lại applicationId.
-6. Chạy trên máy/emulator và đi hết luồng trong checklist của card IN4-130.
+6. Chạy trên máy/emulator và đi hết luồng trong checklist của card PSRC-130.
    Ba mục quan trọng nhất, đều là bug vừa sửa và CHỈ kiểm chứng được trên máy thật:
    - tạo mindmap → thoát app → mở lại → **map mở được**
      (bug `FieldValue.serverTimestamp()` / `DateTime.parse()`: trước khi sửa thì
@@ -105,19 +105,19 @@ RÀNG BUỘC CỨNG:
 - Màn hình mới phải đăng ký trong AppRoutes.generateRoute (test/routes_test.dart
   sẽ fail nếu thiếu).
 
-BÁO CÁO LẠI (dán vào comment của IN4-125):
+BÁO CÁO LẠI (dán vào comment của PSRC-125):
 - flutter --version
 - output `flutter analyze` (số error/warning/info còn lại)
 - output `flutter test` (số test pass)
 - kết quả `flutter build apk --debug`
-- checklist IN4-130: mục nào đạt, mục nào KHÔNG đạt + logcat
+- checklist PSRC-130: mục nào đạt, mục nào KHÔNG đạt + logcat
 - danh sách file đã phải sửa để đạt được điều trên, và LÝ DO từng sửa đổi
 - những gì bạn nghi ngờ nhưng chưa kiểm chứng được
 ```
 
 ---
 
-## PROMPT 2 — VM-P1: Firebase iOS + rules + index (IN4-126)
+## PROMPT 2 — VM-P1: Firebase iOS + rules + index (PSRC-126)
 
 ```
 BẠN LÀM GÌ: hoàn tất cấu hình Firebase cho VipMind — phần iOS đang thiếu, và
@@ -173,7 +173,7 @@ NGHIỆM THU:
 
 ---
 
-## PROMPT 3 — VM-P2.B: Anki/Flashcard UI (IN4-136)
+## PROMPT 3 — VM-P2.B: Anki/Flashcard UI (PSRC-136)
 
 ```
 BẠN LÀM GÌ: xây UI flashcard cho VipMind. Phần logic khó nhất ĐÃ XONG VÀ ĐÃ CÓ
@@ -237,9 +237,9 @@ NGHIỆM THU:
 
 ---
 
-## PROMPT 4 — VM-P2.A: Export PNG/PDF + Share (IN4-135)
+## PROMPT 4 — VM-P2.A: Export PNG/PDF + Share (PSRC-135)
 
-> ⚠️ Chỉ giao sau khi chủ dự án chọn phương án A trong IN4-127.
+> ⚠️ Chỉ giao sau khi chủ dự án chọn phương án A trong PSRC-127.
 
 ```
 BẠN LÀM GÌ: nối 2 hàm đang RỖNG trong editor thành tính năng export + share thật.
@@ -301,6 +301,6 @@ NGHIỆM THU:
   mà không có output, coi như chưa làm.
 * **Sau prompt 1**, gửi lại cho tôi (agent đang giữ nhánh này) output CI + danh
   sách lỗi còn lại, tôi sẽ tổng hợp và quyết định bước kế tiếp.
-* Card IN4-127 đang chờ **quyết định của chủ dự án**: A / B / C. Nếu chưa muốn
+* Card PSRC-127 đang chờ **quyết định của chủ dự án**: A / B / C. Nếu chưa muốn
   quyết, làm prompt 3 (Anki) là an toàn nhất vì không phụ thuộc bên ngoài và
   engine đã có test.

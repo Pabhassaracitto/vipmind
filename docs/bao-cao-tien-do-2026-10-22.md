@@ -319,8 +319,8 @@ Phần trên là báo cáo khảo sát. Phần này ghi lại kết quả sau kh
 | `flutter pub get` | ✅ resolve sạch với 10 package runtime |
 | `flutter analyze` | ✅ **"No issues found!"** — 0 error / 0 warning / 0 info |
 | `flutter test` | ✅ **"All tests passed!" — 108 test** (từ 1 file test hỏng ban đầu) |
-| `dart format --set-exit-if-changed` | ⚠️ đỏ (đang để `continue-on-error`) → card IN4-131 |
-| Build APK / chạy máy thật | ⏳ chưa — cần Android SDK + thiết bị (IN4-130) |
+| `dart format --set-exit-if-changed` | ⚠️ đỏ (đang để `continue-on-error`) → card PSRC-131 |
+| Build APK / chạy máy thật | ⏳ chưa — cần Android SDK + thiết bị (PSRC-130) |
 
 PR: https://github.com/Pabhassaracitto/vipmind/pull/1 ·
 Mỗi lần CI chạy đều **tự đăng comment** lên PR với toàn bộ lỗi (`.github/workflows/ci.yml`,
@@ -362,6 +362,37 @@ set `fontFamily` **từng slot** vì `TextTheme().apply(fontFamily:)` bỏ qua s
 
 ### Việc còn lại (không đổi so với kế hoạch)
 
-IN4-130 build APK + nghiệm thu trên máy thật · IN4-131 `dart format` + bật blocking ·
-IN4-126/132/133/134 Firebase iOS + rules/indexes + Email-Password ·
-IN4-127 chọn mũi nhọn A/B/C · IN4-128 sẵn sàng phát hành.
+PSRC-130 build APK + nghiệm thu trên máy thật · PSRC-131 `dart format` + bật blocking ·
+PSRC-126/132/133/134 Firebase iOS + rules/indexes + Email-Password ·
+PSRC-127 chọn mũi nhọn A/B/C · PSRC-128 sẵn sàng phát hành.
+
+### Đã merge vào `main` (03/11/2026)
+
+PR #1 merge dạng **rebase** → `main` = `1ab8d90`, đúng bằng commit cuối của nhánh làm việc.
+CI chạy trên `main` lần đầu (event `push`, run
+[41702774704](https://github.com/Pabhassaracitto/vipmind/actions/runs/41702774704)) và
+**xanh toàn bộ**: `pub get` · `analyze` 0 issue · `test` 108 pass · catalog JSON hợp lệ.
+
+Một ngoại lệ cần nói rõ: bước *Formatting check* hiện báo "success" **chỉ vì đang đặt
+`continue-on-error: true`** — annotation của job vẫn còn `Process completed with exit
+code 1`, tức `dart format --set-exit-if-changed` vẫn đỏ. PSRC-131 là card xử lý việc đó.
+
+### Milestone thật trong Linear
+
+Khi lập kế hoạch, connector Linear **không có** hàm tạo milestone nên 4 mốc phải dựng
+dưới dạng epic. Connector nay đã có, nên 4 milestone thật đã được tạo và gắn epic vào:
+
+| Milestone | Hạn | Epic | Còn thiếu |
+|---|---|---|---|
+| M1 — Bản chạy được đầu tiên | 10/11/2026 | PSRC-125 | build APK + nghiệm thu thiết bị · `dart format` · commit `pubspec.lock` |
+| M2 — Firebase đủ 2 nền + dữ liệu an toàn | 24/11/2026 | PSRC-126 | toàn bộ — cần quyền Firebase console + máy Mac |
+| M3 — Một tính năng mũi nhọn hoàn chỉnh | *chưa đặt ngày* | PSRC-127 | **chờ chủ dự án chọn A/B/C** |
+| M4 — Sẵn sàng phát hành | *chưa đặt ngày* | PSRC-128 | backlog |
+
+M3 cố tình không đặt ngày: đặt hạn cho một phạm vi chưa chốt chỉ tạo ra mốc ảo.
+
+### Số card đã đổi
+
+Team Linear đổi tên (`In4up` → `PabhassaraCitto`) nên số card đổi từ `IN4-*` sang
+**`PSRC-*`**. UUID không đổi nên link cũ vẫn mở được; tài liệu trong repo đã cập nhật
+theo số mới.

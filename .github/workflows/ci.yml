@@ -298,7 +298,7 @@ jobs:
       # Informational: run `dart format .` locally before pushing. This step
       # does not fail the build yet — the codebase predates any formatting
       # enforcement, and a red first run teaches nobody anything. Flip it to
-      # blocking once `dart format .` has been applied (card IN4-131).
+      # blocking once `dart format .` has been applied (card PSRC-131).
       - name: Formatting check (informational)
         continue-on-error: true
         run: |
