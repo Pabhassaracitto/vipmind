@@ -24,7 +24,7 @@ Full picture, evidence and the reason for each change:
 Conventions for agents and humans: [`docs/AGENT_NOTES.md`](docs/AGENT_NOTES.md).
 Remaining work as ready-to-send agent prompts:
 [`docs/PROMPTS_GIAO_VIEC.md`](docs/PROMPTS_GIAO_VIEC.md).
-Tracked in Linear → project **VipMind — app sơ đồ tư duy** (epics IN4-125 … IN4-128).
+Tracked in Linear → project **VipMind — app sơ đồ tư duy** (epics PSRC-125 … PSRC-128).
 
 ---
 
